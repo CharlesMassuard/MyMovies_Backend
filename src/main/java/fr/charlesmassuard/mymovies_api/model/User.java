@@ -3,71 +3,35 @@ package fr.charlesmassuard.mymovies_api.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Builder
+@Getter
+@Setter
 @Entity
 @Table(name = "users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private int id;
 
+    @Column(unique = true, nullable = false)
     private String pseudo;
+
+    @Column(unique = true, nullable = false)
     private String mail;
+
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
     private LocalDateTime registrationDate;
+
+    @Column(nullable = false)
     private LocalDateTime lastLoginDate;
 
-    public User() {}
-
-    public User(String pseudo, String mail, String password, LocalDateTime registrationDate, LocalDateTime lastLoginDate) {
-        this.pseudo = pseudo;
-        this.mail = mail;
-        this.password = password;
-        this.registrationDate = registrationDate;
-        this.lastLoginDate = lastLoginDate;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getPseudo() {
-        return pseudo;
-    }
-
-    public void setPseudo(String pseudo) {
-        this.pseudo = pseudo;
-    }
-
-    public String getMail() {
-        return mail;
-    }
-
-    public void setMail(String mail) {
-        this.mail = mail;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public LocalDateTime getRegistrationDate() {
-        return registrationDate;
-    }
-
-    public void setRegistrationDate(LocalDateTime registrationDate) {
-        this.registrationDate = registrationDate;
-    }
-
-    public LocalDateTime getLastLoginDate() {
-        return lastLoginDate;
-    }
-
-    public void setLastLoginDate(LocalDateTime lastLoginDate) {
-        this.lastLoginDate = lastLoginDate;
-    }
 }
