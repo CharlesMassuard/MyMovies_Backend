@@ -1,4 +1,4 @@
-package fr.charlesmassuard.mymovies_api.tmdb;
+package fr.charlesmassuard.mymovies_api.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ public class TmdbService {
 
     public String getAuthStatus() {
         return client.get()
-            .uri("/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc")
+            .uri("/discover/movie?include_adult=false&include_video=false&language=fr-FR&page=1&sort_by=popularity.desc")
             .retrieve()
             .body(String.class);
     }

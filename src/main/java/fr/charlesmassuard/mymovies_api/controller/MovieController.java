@@ -1,7 +1,8 @@
 package fr.charlesmassuard.mymovies_api.controller;
 
 import org.springframework.web.bind.annotation.*;
-import fr.charlesmassuard.mymovies_api.tmdb.TmdbService;
+
+import fr.charlesmassuard.mymovies_api.service.TmdbService;
 
 @RestController
 @RequestMapping("/api/movies")
