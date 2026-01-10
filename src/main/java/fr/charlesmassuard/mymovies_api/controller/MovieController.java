@@ -1,13 +1,21 @@
 package fr.charlesmassuard.mymovies_api.controller;
 
 import org.springframework.web.bind.annotation.*;
+import fr.charlesmassuard.mymovies_api.tmdb.TmdbService;
 
 @RestController
 @RequestMapping("/api/movies")
 public class MovieController {
 
-    @GetMapping
-    public String getMovies() {
-        return "Backend Spring Boot OK";
+    private final TmdbService tmdb;
+
+    public MovieController(TmdbService tmdb) {
+        this.tmdb = tmdb;
+    }
+
+    @GetMapping("/test")
+    public String testTmdb() {
+        return tmdb.getAuthStatus();
     }
 }
+
