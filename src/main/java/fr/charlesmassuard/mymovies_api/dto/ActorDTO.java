@@ -1,0 +1,14 @@
+package fr.charlesmassuard.mymovies_api.dto;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Builder
+public class ActorDTO {
+
+    private String name;
+    
+}
