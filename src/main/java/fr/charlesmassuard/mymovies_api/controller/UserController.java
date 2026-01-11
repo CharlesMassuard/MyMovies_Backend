@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 public class UserController {
 
     private final UserService userService;
@@ -19,7 +19,31 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> credentials) {
+        try {
+            String mail = credentials.get("mail");
+            String password = credentials.get("password");
+            UserDTO user = userService.authenticateUser(mail, password);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "User authenticated successfully",
+                    "user", user
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                "status", "error",
+                "message", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "status", "error",
+                    "message", "An unexpected error occurred"
+            ));
+        }
+    }
+
+    @PostMapping("/register")
     public ResponseEntity<?> addUser(@RequestBody UserDTO user) {
         try {
             UserDTO createdUser = userService.createUser(user.getPseudo(), user.getMail(), user.getPassword());

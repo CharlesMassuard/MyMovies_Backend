@@ -41,5 +41,25 @@ public class UserService {
                 .lastLoginDate(user.getLastLoginDate())
                 .build();
     }
+
+    public UserDTO authenticateUser(String mail, String password) {
+        User user = userRepository.findByMail(mail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid password");
+        }
+
+        user.setLastLoginDate(LocalDateTime.now());
+        userRepository.save(user);
+
+        return UserDTO.builder()
+                .pseudo(user.getPseudo())
+                .mail(user.getMail())
+                .password(user.getPassword())
+                .registrationDate(user.getRegistrationDate())
+                .lastLoginDate(user.getLastLoginDate())
+                .build();
+    }
 }
 
