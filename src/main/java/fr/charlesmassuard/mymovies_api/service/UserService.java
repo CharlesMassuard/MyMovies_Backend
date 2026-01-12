@@ -3,6 +3,8 @@ package fr.charlesmassuard.mymovies_api.service;
 import fr.charlesmassuard.mymovies_api.model.User;
 import fr.charlesmassuard.mymovies_api.dto.UserDTO;
 import fr.charlesmassuard.mymovies_api.repository.UserRepository;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -11,9 +13,11 @@ import java.time.LocalDateTime;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserDTO createUser(String pseudo, String mail, String password) {
@@ -23,11 +27,10 @@ public class UserService {
         if (userRepository.existsByMail(mail)) {
             throw new RuntimeException("Email already in use");
         }
-
         User user = User.builder()
                 .pseudo(pseudo)
                 .mail(mail)
-                .password(password)
+                .password(passwordEncoder.encode(password))
                 .registrationDate(LocalDateTime.now())
                 .lastLoginDate(LocalDateTime.now())
                 .build();
@@ -46,7 +49,7 @@ public class UserService {
         User user = userRepository.findByMail(mail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
 
