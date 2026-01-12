@@ -32,4 +32,11 @@ public class TmdbService {
             .retrieve()
             .body(String.class);
     }
+
+    public String getTrendingMoviesDay() {
+        return client.get()
+            .uri("/trending/movie/day?language=fr-FR&include_adult=false&page=1&sort_by=popularity.desc&region=FR")
+            .retrieve()
+            .body(String.class);
+    }
 }

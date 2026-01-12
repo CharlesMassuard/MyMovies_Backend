@@ -23,5 +23,10 @@ public class MovieController {
     public String moviesInTheater() {
         return tmdb.getMoviesInTheater();
     }
+
+    @GetMapping("/trending/day")
+    public String trendingMoviesDay() {
+        return tmdb.getTrendingMoviesDay();
+    }
 }
 
