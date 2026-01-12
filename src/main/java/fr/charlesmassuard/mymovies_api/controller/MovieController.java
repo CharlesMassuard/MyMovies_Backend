@@ -14,9 +14,9 @@ public class MovieController {
         this.tmdb = tmdb;
     }
 
-    @GetMapping("/test")
-    public String testTmdb() {
-        return tmdb.getAuthStatus();
+    @GetMapping("/trending")
+    public String trendingMovies() {
+        return tmdb.getTrendingMovies();
     }
 }
 

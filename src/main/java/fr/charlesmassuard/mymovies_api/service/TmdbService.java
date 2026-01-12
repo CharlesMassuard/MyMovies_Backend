@@ -19,7 +19,7 @@ public class TmdbService {
             .build();
     }
 
-    public String getAuthStatus() {
+    public String getTrendingMovies() {
         return client.get()
             .uri("/discover/movie?include_adult=false&include_video=false&language=fr-FR&page=1&sort_by=popularity.desc")
             .retrieve()
