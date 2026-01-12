@@ -1,5 +1,6 @@
 package fr.charlesmassuard.mymovies_api.controller;
 
+import fr.charlesmassuard.mymovies_api.config.JwtUtils;
 import fr.charlesmassuard.mymovies_api.dto.UserDTO;
 import fr.charlesmassuard.mymovies_api.service.UserService;
 
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final JwtUtils jwtUtils;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtUtils jwtUtils) {
         this.userService = userService;
+        this.jwtUtils = jwtUtils;
     }
 
     @PostMapping("/login")
@@ -25,9 +28,11 @@ public class UserController {
             String mail = credentials.get("mail");
             String password = credentials.get("password");
             UserDTO user = userService.authenticateUser(mail, password);
+            String token = jwtUtils.generateToken(mail);
             return ResponseEntity.ok(Map.of(
                     "status", "success",
                     "message", "User authenticated successfully",
+                    "token", token,
                     "user", user
             ));
         } catch (RuntimeException e) {
@@ -47,9 +52,11 @@ public class UserController {
     public ResponseEntity<?> addUser(@RequestBody UserDTO user) {
         try {
             UserDTO createdUser = userService.createUser(user.getPseudo(), user.getMail(), user.getPassword());
+            String token = jwtUtils.generateToken(user.getMail());
             return ResponseEntity.ok(Map.of(
                     "status", "success",
                     "message", "User created successfully",
+                    "token", token,
                     "user", createdUser
             ));
         } catch (RuntimeException e) {
