@@ -21,7 +21,14 @@ public class TmdbService {
 
     public String getTrendingMovies() {
         return client.get()
-            .uri("/discover/movie?include_adult=false&include_video=false&language=fr-FR&page=1&sort_by=popularity.desc")
+            .uri("/discover/movie?include_adult=false&language=fr-FR&page=1&sort_by=popularity.desc")
+            .retrieve()
+            .body(String.class);
+    }
+
+    public String getMoviesInTheater() {
+        return client.get()
+            .uri("/movie/now_playing?language=fr-FR&region=FR&include_adult=false&page=1&sort_by=popularity.desc")
             .retrieve()
             .body(String.class);
     }

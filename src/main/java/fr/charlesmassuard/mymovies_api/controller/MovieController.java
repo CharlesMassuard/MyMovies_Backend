@@ -18,5 +18,10 @@ public class MovieController {
     public String trendingMovies() {
         return tmdb.getTrendingMovies();
     }
+
+    @GetMapping("/in-theater")
+    public String moviesInTheater() {
+        return tmdb.getMoviesInTheater();
+    }
 }
 
