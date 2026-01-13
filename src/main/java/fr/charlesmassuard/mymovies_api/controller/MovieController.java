@@ -28,5 +28,10 @@ public class MovieController {
     public String trendingMoviesDay() {
         return tmdb.getTrendingMoviesDay();
     }
+
+    @GetMapping("/search")
+    public String searchMovies(@RequestParam String query) {
+        return tmdb.searchMovies(query);
+    }
 }
 

@@ -39,4 +39,17 @@ public class TmdbService {
             .retrieve()
             .body(String.class);
     }
+
+    public String searchMovies(String query) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/search/movie")
+                .queryParam("query", query)
+                .queryParam("language", "fr-FR")
+                .queryParam("include_adult", "false")
+                .queryParam("page", "1")
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
 }
