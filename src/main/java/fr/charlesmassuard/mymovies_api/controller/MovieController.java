@@ -33,5 +33,10 @@ public class MovieController {
     public String searchMovies(@RequestParam String query) {
         return tmdb.searchMovies(query);
     }
+
+    @GetMapping("/{id}")
+    public String getMovieDetails(@PathVariable String id) {
+        return tmdb.getMovieDetails(id);
+    }
 }
 

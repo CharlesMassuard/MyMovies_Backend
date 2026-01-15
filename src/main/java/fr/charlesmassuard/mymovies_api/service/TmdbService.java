@@ -52,4 +52,14 @@ public class TmdbService {
             .retrieve()
             .body(String.class);
     }
+
+    public String getMovieDetails(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/movie/" + id)
+                .queryParam("language", "fr-FR")
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
 }
