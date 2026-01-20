@@ -62,4 +62,14 @@ public class TmdbService {
             .retrieve()
             .body(String.class);
     }
+
+    public String getMovieCredits(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/movie/" + id + "/credits")
+                .queryParam("language", "fr-FR")
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
 }

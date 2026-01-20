@@ -38,5 +38,10 @@ public class MovieController {
     public String getMovieDetails(@PathVariable String id) {
         return tmdb.getMovieDetails(id);
     }
+
+    @GetMapping("/{id}/credits")
+    public String getMovieCredits(@PathVariable String id) {
+        return tmdb.getMovieCredits(id);
+    }
 }
 
