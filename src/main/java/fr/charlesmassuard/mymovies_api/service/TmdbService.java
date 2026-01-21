@@ -1,6 +1,8 @@
 package fr.charlesmassuard.mymovies_api.service;
 
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.http.HttpHeaders;
@@ -61,6 +63,13 @@ public class TmdbService {
                 .build())
             .retrieve()
             .body(String.class);
+    }
+
+    public Map<String, Object> getMovieDetailsMap(int id) {
+        return client.get()
+            .uri("/movie/" + id + "?language=fr-FR")
+            .retrieve()
+            .body(new ParameterizedTypeReference<Map<String, Object>>() {});
     }
 
     public String getMovieCredits(String id) {

@@ -3,6 +3,7 @@ package fr.charlesmassuard.mymovies_api.controller;
 import fr.charlesmassuard.mymovies_api.config.JwtUtils;
 import fr.charlesmassuard.mymovies_api.dto.UserDTO;
 import fr.charlesmassuard.mymovies_api.service.UserService;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
@@ -11,16 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
     private final JwtUtils jwtUtils;
-
-    public UserController(UserService userService, JwtUtils jwtUtils) {
-        this.userService = userService;
-        this.jwtUtils = jwtUtils;
-    }
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody Map<String, String> credentials) {

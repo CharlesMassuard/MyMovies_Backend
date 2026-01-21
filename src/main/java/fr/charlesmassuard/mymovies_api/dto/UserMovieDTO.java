@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Setter
 @Builder
-public class UserFilmDTO {
+public class UserMovieDTO {
 
     private String commentaire;
     private int rating;
