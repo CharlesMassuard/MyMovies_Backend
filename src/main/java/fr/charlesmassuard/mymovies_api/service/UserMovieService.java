@@ -88,6 +88,24 @@ public class UserMovieService {
             .orElse("UNDEFINED");
     }
 
+    public Integer getUserMovieRating(String userEmail, int movieId) {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        
+        return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
+            .map(um -> um.getRating() != -1 ? um.getRating() : -1)
+            .orElse(-1);
+    }
+
+    public String getUserMovieComment(String userEmail, int movieId) {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        
+        return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
+            .map(um -> um.getCommentaire() != null ? um.getCommentaire() : "NO_COMMENT")
+            .orElse("UNDEFINED");
+    }
+
     public void updateUserMovieStatus(String userEmail, int movieId, String statusStr, String watchedAtStr) {
         User user = userRepository.findByMail(userEmail)
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
@@ -114,6 +132,18 @@ public class UserMovieService {
             }
         }
         userMovie.setDateAdded(now);
+        userMovieRepository.save(userMovie);
+    }
+
+    public void rateUserMovie(String userEmail, int movieId, int rating, String comment) {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        
+        UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
+            .orElseThrow(() -> new RuntimeException("Film non trouvé dans la liste de l'utilisateur"));
+        
+        userMovie.setRating(rating);
+        userMovie.setCommentaire(comment);
         userMovieRepository.save(userMovie);
     }
 
