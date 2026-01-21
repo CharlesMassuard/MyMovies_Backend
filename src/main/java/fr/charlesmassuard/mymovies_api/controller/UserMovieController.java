@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import java.security.Principal;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/user/movies")
@@ -13,7 +14,7 @@ import java.security.Principal;
 public class UserMovieController {
 
 
-    public record StatusRequest(String status) {}
+    public record StatusRequest(String status, String watchedAt) {}
     private final UserMovieService userMovieService;
     
     @PostMapping("/to-watch/{movieId}")
@@ -44,7 +45,7 @@ public class UserMovieController {
         Principal principal
     ) {
         String userEmail = principal.getName();
-        userMovieService.updateUserMovieStatus(userEmail, movieId, request.status());
+        userMovieService.updateUserMovieStatus(userEmail, movieId, request.status(), request.watchedAt());
         return ResponseEntity.ok("Statut du film mis à jour");
     }
 

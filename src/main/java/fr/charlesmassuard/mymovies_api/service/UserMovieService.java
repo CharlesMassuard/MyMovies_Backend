@@ -88,7 +88,7 @@ public class UserMovieService {
             .orElse("UNDEFINED");
     }
 
-    public void updateUserMovieStatus(String userEmail, int movieId, String statusStr) {
+    public void updateUserMovieStatus(String userEmail, int movieId, String statusStr, String watchedAtStr) {
         User user = userRepository.findByMail(userEmail)
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         
@@ -106,7 +106,12 @@ public class UserMovieService {
         
         userMovie.setStatus(status);
         if(status == Status.WATCHED) {
-            userMovie.setDateViewed(now);
+            if (watchedAtStr != null && !watchedAtStr.isEmpty()) {
+                LocalDate watchedAt = LocalDate.parse(watchedAtStr);
+                userMovie.setDateViewed(watchedAt.atStartOfDay());
+            } else {
+                userMovie.setDateViewed(now);
+            }
         }
         userMovie.setDateAdded(now);
         userMovieRepository.save(userMovie);
