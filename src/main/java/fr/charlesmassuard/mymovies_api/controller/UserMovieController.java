@@ -12,6 +12,8 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class UserMovieController {
 
+
+    public record StatusRequest(String status) {}
     private final UserMovieService userMovieService;
     
     @PostMapping("/to-watch/{movieId}")
@@ -26,5 +28,30 @@ public class UserMovieController {
         String userEmail = principal.getName();
         String status = userMovieService.getUserMovieStatus(userEmail, movieId);
         return ResponseEntity.ok(status);
+    }
+
+    @GetMapping("/watched-date/{movieId}")
+    public ResponseEntity<String> getUserMovieWatchedDate(@PathVariable int movieId, Principal principal) {
+        String userEmail = principal.getName();
+        String watchedDate = userMovieService.getUserMovieWatchedDate(userEmail, movieId);
+        return ResponseEntity.ok(watchedDate);
+    }
+
+    @PutMapping("/status/{movieId}")
+    public ResponseEntity<String> updateUserMovieStatus(
+        @PathVariable int movieId, 
+        @RequestBody StatusRequest request, 
+        Principal principal
+    ) {
+        String userEmail = principal.getName();
+        userMovieService.updateUserMovieStatus(userEmail, movieId, request.status());
+        return ResponseEntity.ok("Statut du film mis à jour");
+    }
+
+    @DeleteMapping("/status/{movieId}")
+    public ResponseEntity<String> deleteUserMovieStatus(@PathVariable int movieId, Principal principal) {
+        String userEmail = principal.getName();
+        userMovieService.deleteUserMovieStatus(userEmail, movieId);
+        return ResponseEntity.ok("Film supprimé de la liste");
     }
 }

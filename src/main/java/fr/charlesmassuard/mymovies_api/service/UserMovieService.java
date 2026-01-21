@@ -74,4 +74,51 @@ public class UserMovieService {
             })
             .orElse("UNDEFINED");
     }
+
+    public String getUserMovieWatchedDate(String userEmail, int movieId) {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        
+        return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
+            .map(um -> {
+                LocalDateTime dateViewed = um.getDateViewed();
+                LocalDate dateOnly = dateViewed != null ? dateViewed.toLocalDate() : null;
+                return dateOnly != null ? dateOnly.toString() : "NOT_WATCHED_YET";
+            })
+            .orElse("UNDEFINED");
+    }
+
+    public void updateUserMovieStatus(String userEmail, int movieId, String statusStr) {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        
+        Status status;
+        LocalDateTime now = LocalDateTime.now();
+        try {
+            status = Status.valueOf(statusStr);
+
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Statut invalide");
+        }
+        
+        UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
+            .orElseThrow(() -> new RuntimeException("Film non trouvé dans la liste de l'utilisateur"));
+        
+        userMovie.setStatus(status);
+        if(status == Status.WATCHED) {
+            userMovie.setDateViewed(now);
+        }
+        userMovie.setDateAdded(now);
+        userMovieRepository.save(userMovie);
+    }
+
+    public void deleteUserMovieStatus(String userEmail, int movieId) {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        
+        UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
+            .orElseThrow(() -> new RuntimeException("Film non trouvé dans la liste de l'utilisateur"));
+        
+        userMovieRepository.delete(userMovie);
+    }
 }
