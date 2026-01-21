@@ -72,6 +72,6 @@ public class UserMovieService {
                 System.out.println("Status found: " + um.getStatus().name());
                 return um.getStatus().name();
             })
-            .orElse("UNKNOWN");
+            .orElse("UNDEFINED");
     }
 }
