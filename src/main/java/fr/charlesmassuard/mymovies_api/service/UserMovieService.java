@@ -1,9 +1,6 @@
 package fr.charlesmassuard.mymovies_api.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.web.client.RestClient;
-
 import fr.charlesmassuard.mymovies_api.model.Movie;
 import fr.charlesmassuard.mymovies_api.model.Status;
 import fr.charlesmassuard.mymovies_api.model.User;
@@ -30,10 +27,47 @@ public class UserMovieService {
         User user = userRepository.findByMail(userEmail)
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         
-        Movie movie = movieRepository.findById(movieId)
+        Movie movie = getOrCreateMovie(movieId);
+        
+        UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
+            .orElseGet(() -> UserMovie.builder()
+                .user(user)
+                .movie(movie)
+                .dateAdded(LocalDateTime.now())
+                .build());
+
+        userMovie.setStatus(Status.TO_WATCH);
+        userMovieRepository.save(userMovie);
+    }
+
+    public void rateUserMovie(String userEmail, int movieId, int rating, String comment) {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        
+        Movie movie = getOrCreateMovie(movieId);
+
+        UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
+            .orElseGet(() -> UserMovie.builder()
+                .user(user)
+                .movie(movie)
+                .status(Status.WATCHED)
+                .dateAdded(LocalDateTime.now())
+                .dateViewed(LocalDateTime.now())
+                .build());
+        
+        userMovie.setRating(rating);
+        userMovie.setCommentaire(comment);
+        userMovie.setStatus(Status.WATCHED);
+        if(userMovie.getDateViewed() == null){
+            userMovie.setDateViewed(LocalDateTime.now());
+        }
+        userMovieRepository.save(userMovie);
+    }
+
+    private Movie getOrCreateMovie(int movieId) {
+        return movieRepository.findById(movieId)
             .orElseGet(() -> {
                 Map<String, Object> data = tmdbService.getMovieDetailsMap(movieId);
-                
                 Movie movieFromTmdb = Movie.builder()
                     .id(movieId)
                     .title((String) data.get("title"))
@@ -43,35 +77,19 @@ public class UserMovieService {
                     .duration((Integer) data.get("runtime"))
                     .addedBDDate(LocalDateTime.now())
                     .rate(0)
-                    .actors(new java.util.HashSet<fr.charlesmassuard.mymovies_api.model.Actor>())
-                    .directors(new java.util.HashSet<fr.charlesmassuard.mymovies_api.model.Director>())
-                    .types(new java.util.HashSet<fr.charlesmassuard.mymovies_api.model.Type>())
+                    .actors(new java.util.HashSet<>())
+                    .directors(new java.util.HashSet<>())
+                    .types(new java.util.HashSet<>())
                     .build();
-                    
                 return movieRepository.save(movieFromTmdb);
             });
-        
-        UserMovie userMovie = UserMovie.builder()
-            .commentaire(null)
-            .rating(-1)
-            .isPublic(false)
-            .dateAdded(LocalDateTime.now())
-            .status(Status.TO_WATCH)
-            .user(user)
-            .movie(movie)
-            .build();
-        
-        userMovieRepository.save(userMovie);
     }
 
     public String getUserMovieStatus(String userEmail, int movieId) {
         User user = userRepository.findByMail(userEmail)
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
-            .map(um -> {
-                System.out.println("Status found: " + um.getStatus().name());
-                return um.getStatus().name();
-            })
+            .map(um -> um.getStatus().name())
             .orElse("UNDEFINED");
     }
 
@@ -93,7 +111,7 @@ public class UserMovieService {
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         
         return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
-            .map(um -> um.getRating() != -1 ? um.getRating() : -1)
+            .map(um -> um.getRating())
             .orElse(-1);
     }
 
@@ -111,10 +129,8 @@ public class UserMovieService {
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         
         Status status;
-        LocalDateTime now = LocalDateTime.now();
         try {
             status = Status.valueOf(statusStr);
-
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Statut invalide");
         }
@@ -127,23 +143,10 @@ public class UserMovieService {
             if (watchedAtStr != null && !watchedAtStr.isEmpty()) {
                 LocalDate watchedAt = LocalDate.parse(watchedAtStr);
                 userMovie.setDateViewed(watchedAt.atStartOfDay());
-            } else {
-                userMovie.setDateViewed(now);
+            } else if (userMovie.getDateViewed() == null) {
+                userMovie.setDateViewed(LocalDateTime.now());
             }
         }
-        userMovie.setDateAdded(now);
-        userMovieRepository.save(userMovie);
-    }
-
-    public void rateUserMovie(String userEmail, int movieId, int rating, String comment) {
-        User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-        
-        UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
-            .orElseThrow(() -> new RuntimeException("Film non trouvé dans la liste de l'utilisateur"));
-        
-        userMovie.setRating(rating);
-        userMovie.setCommentaire(comment);
         userMovieRepository.save(userMovie);
     }
 
