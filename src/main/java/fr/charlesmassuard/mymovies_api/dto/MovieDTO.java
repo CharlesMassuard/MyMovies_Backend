@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MovieDTO {
 
+    private int id;
     private String title;
     private LocalDate releaseDate;
     private String resume;

@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserMovieRepository extends JpaRepository<UserMovie, Integer> {
     java.util.Optional<UserMovie> findByUserIdAndMovieId(Integer userId, int movieId);
+    java.util.List<UserMovie> findAllByUserId(Integer userId);
 }

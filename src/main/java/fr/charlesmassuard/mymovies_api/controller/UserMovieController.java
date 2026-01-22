@@ -1,12 +1,14 @@
 package fr.charlesmassuard.mymovies_api.controller;
 
-import fr.charlesmassuard.mymovies_api.dto.UserMovieDTO;
 import fr.charlesmassuard.mymovies_api.service.UserMovieService;
+import fr.charlesmassuard.mymovies_api.dto.UserMovieDTO;
+import fr.charlesmassuard.mymovies_api.dto.UserMovieResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user/movies")
@@ -23,6 +25,13 @@ public class UserMovieController {
         String userEmail = principal.getName();
         userMovieService.addToWatchlist(userEmail, movieId);
         return ResponseEntity.ok("Film ajouté à la liste");
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserMovieResponseDTO>> getUserMovies(Principal principal) {
+        String userEmail = principal.getName();
+        List<UserMovieResponseDTO> userMovies = userMovieService.getUserMovies(userEmail);
+        return ResponseEntity.ok(userMovies);
     }
 
     @GetMapping("/status/{movieId}")

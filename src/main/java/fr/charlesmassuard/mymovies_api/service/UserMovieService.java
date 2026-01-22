@@ -1,6 +1,9 @@
 package fr.charlesmassuard.mymovies_api.service;
 
 import org.springframework.stereotype.Service;
+
+import fr.charlesmassuard.mymovies_api.dto.MovieDTO;
+import fr.charlesmassuard.mymovies_api.dto.UserMovieResponseDTO;
 import fr.charlesmassuard.mymovies_api.model.Movie;
 import fr.charlesmassuard.mymovies_api.model.Status;
 import fr.charlesmassuard.mymovies_api.model.User;
@@ -12,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -158,5 +162,31 @@ public class UserMovieService {
             .orElseThrow(() -> new RuntimeException("Film non trouvé dans la liste de l'utilisateur"));
         
         userMovieRepository.delete(userMovie);
+    }
+
+    public List<UserMovieResponseDTO> getUserMovies(String userEmail) {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        
+        List<UserMovie> userMovies = userMovieRepository.findAllByUserId(user.getId());
+        
+        return userMovies.stream().map(um -> {
+            Movie movie = um.getMovie();
+            MovieDTO movieDTO = MovieDTO.builder()
+                .id(movie.getId())
+                .title(movie.getTitle())
+                .releaseDate(movie.getReleaseDate())
+                .resume(movie.getResume())
+                .posterUrl(movie.getPosterUrl())
+                .duration(movie.getDuration())
+                .addedBDDate(movie.getAddedBDDate())
+                .rate(movie.getRate())
+                .build();
+            return UserMovieResponseDTO.builder()
+                .rating(um.getRating())
+                .status(um.getStatus())
+                .movie(movieDTO)
+                .build();
+        }).toList();
     }
 }
