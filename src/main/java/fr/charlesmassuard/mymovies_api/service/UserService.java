@@ -64,5 +64,36 @@ public class UserService {
                 .lastLoginDate(user.getLastLoginDate())
                 .build();
     }
+
+    public void updateUserMail(String currentMail, String newMail) {
+        User user = userRepository.findByMail(currentMail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (userRepository.existsByMail(newMail)) {
+            throw new RuntimeException("Email already in use");
+        }
+
+        user.setMail(newMail);
+        userRepository.save(user);
+    }
+
+    public void updateUserPassword(String mail, String currentPassword, String newPassword) {
+        User user = userRepository.findByMail(mail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    public void deleteUser(String mail) {
+        User user = userRepository.findByMail(mail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        userRepository.delete(user);
+    }
 }
 

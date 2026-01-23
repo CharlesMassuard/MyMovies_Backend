@@ -10,6 +10,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -55,6 +56,75 @@ public class UserController {
                     "message", "User created successfully",
                     "token", token,
                     "user", createdUser
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "status", "error",
+                "message", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "status", "error",
+                    "message", "An unexpected error occurred"
+            ));
+        }
+    }
+
+    @PutMapping("/update/mail")
+    public ResponseEntity<?> updateUserMail(Principal principal, @RequestBody Map<String, String> request) {
+        try {
+            String currentMail = principal.getName();
+            String newMail = request.get("newMail");
+            userService.updateUserMail(currentMail, newMail);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "User mail updated successfully"
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "status", "error",
+                "message", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "status", "error",
+                    "message", "An unexpected error occurred"
+            ));
+        }
+    }
+
+    @PutMapping("/update/password")
+    public ResponseEntity<?> updateUserPassword(Principal principal, @RequestBody Map<String, String> request) {
+        try {
+            String currentMail = principal.getName();
+            String newPassword = request.get("newPassword");
+            String currentPassword = request.get("oldPassword");
+            userService.updateUserPassword(currentMail, currentPassword, newPassword);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "User password updated successfully"
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "status", "error",
+                "message", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "status", "error",
+                    "message", "An unexpected error occurred"
+            ));
+        }
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteUser(Principal principal) {
+        try {
+            String mail = principal.getName();
+            userService.deleteUser(mail);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "User deleted successfully"
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
