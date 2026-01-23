@@ -1,13 +1,11 @@
 package fr.charlesmassuard.mymovies_api.controller;
 
 import fr.charlesmassuard.mymovies_api.service.UserMovieService;
-import fr.charlesmassuard.mymovies_api.dto.UserMovieDTO;
 import fr.charlesmassuard.mymovies_api.dto.UserMovieResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import java.security.Principal;
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
