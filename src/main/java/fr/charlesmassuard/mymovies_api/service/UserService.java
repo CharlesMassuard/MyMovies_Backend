@@ -3,13 +3,17 @@ package fr.charlesmassuard.mymovies_api.service;
 import fr.charlesmassuard.mymovies_api.model.User;
 import fr.charlesmassuard.mymovies_api.dto.UserDTO;
 import fr.charlesmassuard.mymovies_api.repository.UserRepository;
-
+import jakarta.transaction.Transactional;
 import fr.charlesmassuard.mymovies_api.config.JwtUtils;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import fr.charlesmassuard.mymovies_api.model.UserMovie;
+import fr.charlesmassuard.mymovies_api.repository.UserMovieRepository;
 
 @Service
 public class UserService {
@@ -17,11 +21,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final UserMovieRepository userMovieRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, UserMovieRepository userMovieRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.userMovieRepository = userMovieRepository;
     }
 
     public UserDTO createUser(String pseudo, String mail, String password) {
@@ -107,9 +113,12 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void deleteUser(String mail) {
         User user = userRepository.findByMail(mail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        userMovieRepository.deleteAllByUserId(user.getId());
 
         userRepository.delete(user);
     }
