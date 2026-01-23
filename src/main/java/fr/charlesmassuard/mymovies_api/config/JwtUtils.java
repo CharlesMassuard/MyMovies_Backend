@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 public class JwtUtils {
 
     private final Key key;
-    private final int jwtExpirationMs = 86400000;
+    private static final int JWT_EXPIRATION_MS = 86400000;
 
     public JwtUtils(@Value("${jwt.secret}") String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
@@ -23,7 +23,7 @@ public class JwtUtils {
         return Jwts.builder()
                 .setSubject(mail)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .setExpiration(new Date((new Date()).getTime() + JWT_EXPIRATION_MS))
                 .signWith(key)
                 .compact();
     }
