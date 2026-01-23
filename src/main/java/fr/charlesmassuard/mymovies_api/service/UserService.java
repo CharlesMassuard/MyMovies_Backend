@@ -10,9 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
-import fr.charlesmassuard.mymovies_api.model.UserMovie;
 import fr.charlesmassuard.mymovies_api.repository.UserMovieRepository;
 
 @Service
@@ -22,6 +19,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final UserMovieRepository userMovieRepository;
+
+    private static final String USER_NOT_FOUND = "User not found";
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, UserMovieRepository userMovieRepository) {
         this.userRepository = userRepository;
@@ -57,7 +56,7 @@ public class UserService {
 
     public UserDTO authenticateUser(String mail, String password) {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid password");
@@ -77,7 +76,7 @@ public class UserService {
 
     public void updateUserPseudo(String mail, String newPseudo) {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
         if (userRepository.existsByPseudo(newPseudo)) {
             throw new RuntimeException("Pseudo already in use");
@@ -89,7 +88,7 @@ public class UserService {
 
     public String updateUserMail(String currentMail, String newMail) {
         User user = userRepository.findByMail(currentMail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
         if (userRepository.existsByMail(newMail)) {
             throw new RuntimeException("Email already in use");
@@ -97,13 +96,12 @@ public class UserService {
 
         user.setMail(newMail);
         userRepository.save(user);
-        String newToken = jwtUtils.generateToken(newMail);
-        return newToken;
+        return jwtUtils.generateToken(newMail);
     }
 
     public void updateUserPassword(String mail, String currentPassword, String newPassword) {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             throw new RuntimeException("Current password is incorrect");
@@ -116,7 +114,7 @@ public class UserService {
     @Transactional
     public void deleteUser(String mail) {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
         userMovieRepository.deleteAllByUserId(user.getId());
 
