@@ -70,6 +70,29 @@ public class UserController {
         }
     }
 
+    @PutMapping("/update/pseudo")
+    public ResponseEntity<?> updateUserPseudo(Principal principal, @RequestBody Map<String, String> request) {
+        try {
+            String currentMail = principal.getName();
+            String newPseudo = request.get("newPseudo");
+            userService.updateUserPseudo(currentMail, newPseudo);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "User pseudo updated successfully"
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "status", "error",
+                "message", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "status", "error",
+                    "message", "An unexpected error occurred"
+            ));
+        }
+    }
+
     @PutMapping("/update/mail")
     public ResponseEntity<?> updateUserMail(Principal principal, @RequestBody Map<String, String> request) {
         try {

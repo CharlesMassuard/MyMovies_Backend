@@ -65,6 +65,18 @@ public class UserService {
                 .build();
     }
 
+    public void updateUserPseudo(String mail, String newPseudo) {
+        User user = userRepository.findByMail(mail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (userRepository.existsByPseudo(newPseudo)) {
+            throw new RuntimeException("Pseudo already in use");
+        }
+
+        user.setPseudo(newPseudo);
+        userRepository.save(user);
+    }
+
     public void updateUserMail(String currentMail, String newMail) {
         User user = userRepository.findByMail(currentMail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
