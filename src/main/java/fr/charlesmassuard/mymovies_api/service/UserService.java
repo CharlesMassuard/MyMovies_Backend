@@ -2,6 +2,7 @@ package fr.charlesmassuard.mymovies_api.service;
 
 import fr.charlesmassuard.mymovies_api.model.User;
 import fr.charlesmassuard.mymovies_api.dto.UserDTO;
+import fr.charlesmassuard.mymovies_api.exceptions.UserException;
 import fr.charlesmassuard.mymovies_api.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import fr.charlesmassuard.mymovies_api.config.JwtUtils;
@@ -29,12 +30,12 @@ public class UserService {
         this.userMovieRepository = userMovieRepository;
     }
 
-    public UserDTO createUser(String pseudo, String mail, String password) {
+    public UserDTO createUser(String pseudo, String mail, String password) throws UserException {
         if (userRepository.existsByPseudo(pseudo)) {
-            throw new RuntimeException("Pseudo already in use");
+            throw new UserException("Pseudo already in use");
         }
         if (userRepository.existsByMail(mail)) {
-            throw new RuntimeException("Email already in use");
+            throw new UserException("Email already in use");
         }
         User user = User.builder()
                 .pseudo(pseudo)
@@ -54,12 +55,12 @@ public class UserService {
                 .build();
     }
 
-    public UserDTO authenticateUser(String mail, String password) {
+    public UserDTO authenticateUser(String mail, String password) throws UserException {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Invalid password");
+            throw new UserException("Invalid password");
         }
 
         user.setLastLoginDate(LocalDateTime.now());
@@ -74,24 +75,23 @@ public class UserService {
                 .build();
     }
 
-    public void updateUserPseudo(String mail, String newPseudo) {
+    public void updateUserPseudo(String mail, String newPseudo) throws UserException {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
 
         if (userRepository.existsByPseudo(newPseudo)) {
-            throw new RuntimeException("Pseudo already in use");
+            throw new UserException("Pseudo already in use");
         }
 
         user.setPseudo(newPseudo);
         userRepository.save(user);
     }
 
-    public String updateUserMail(String currentMail, String newMail) {
+    public String updateUserMail(String currentMail, String newMail) throws UserException {
         User user = userRepository.findByMail(currentMail)
-                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
-
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
         if (userRepository.existsByMail(newMail)) {
-            throw new RuntimeException("Email already in use");
+            throw new UserException("Email already in use");
         }
 
         user.setMail(newMail);
@@ -99,12 +99,12 @@ public class UserService {
         return jwtUtils.generateToken(newMail);
     }
 
-    public void updateUserPassword(String mail, String currentPassword, String newPassword) {
+    public void updateUserPassword(String mail, String currentPassword, String newPassword) throws UserException {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new RuntimeException("Current password is incorrect");
+            throw new UserException("Current password is incorrect");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -112,9 +112,9 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(String mail) {
+    public void deleteUser(String mail) throws UserException {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
 
         userMovieRepository.deleteAllByUserId(user.getId());
 

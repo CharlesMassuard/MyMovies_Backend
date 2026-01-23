@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import fr.charlesmassuard.mymovies_api.dto.MovieDTO;
 import fr.charlesmassuard.mymovies_api.dto.UserMovieResponseDTO;
+import fr.charlesmassuard.mymovies_api.exceptions.UserException;
 import fr.charlesmassuard.mymovies_api.model.Movie;
 import fr.charlesmassuard.mymovies_api.model.Status;
 import fr.charlesmassuard.mymovies_api.model.User;
@@ -30,9 +31,9 @@ public class UserMovieService {
     private static final String USER_NOT_FOUND = "Utilisateur non trouvé";
     private static final String UNDEFINED = "UNDEFINED";
 
-    public void addToWatchlist(String userEmail, int movieId) {
+    public void addToWatchlist(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
         
         Movie movie = getOrCreateMovie(movieId);
         
@@ -47,9 +48,9 @@ public class UserMovieService {
         userMovieRepository.save(userMovie);
     }
 
-    public void rateUserMovie(String userEmail, int movieId, int rating, String comment) {
+    public void rateUserMovie(String userEmail, int movieId, int rating, String comment) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
         
         Movie movie = getOrCreateMovie(movieId);
 
@@ -92,17 +93,17 @@ public class UserMovieService {
             });
     }
 
-    public String getUserMovieStatus(String userEmail, int movieId) {
+    public String getUserMovieStatus(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
         return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
             .map(um -> um.getStatus().name())
             .orElse(UNDEFINED);
     }
 
-    public String getUserMovieWatchedDate(String userEmail, int movieId) {
+    public String getUserMovieWatchedDate(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
         
         return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
             .map(um -> {
@@ -113,27 +114,27 @@ public class UserMovieService {
             .orElse(UNDEFINED);
     }
 
-    public Integer getUserMovieRating(String userEmail, int movieId) {
+    public Integer getUserMovieRating(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
             
         return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
             .map(UserMovie::getRating)
             .orElse(-1);
     }
 
-    public String getUserMovieComment(String userEmail, int movieId) {
+    public String getUserMovieComment(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
         
         return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
             .map(um -> um.getCommentaire() != null ? um.getCommentaire() : "NO_COMMENT")
             .orElse(UNDEFINED);
     }
 
-    public void updateUserMovieStatus(String userEmail, int movieId, String statusStr, String watchedAtStr) {
+    public void updateUserMovieStatus(String userEmail, int movieId, String statusStr, String watchedAtStr) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
         
         Status status;
         try {
@@ -143,7 +144,7 @@ public class UserMovieService {
         }
         
         UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
-            .orElseThrow(() -> new RuntimeException("Film non trouvé dans la liste de l'utilisateur"));
+            .orElseThrow(() -> new UserException("Film non trouvé dans la liste de l'utilisateur"));
         
         userMovie.setStatus(status);
         if(status == Status.WATCHED) {
@@ -157,19 +158,19 @@ public class UserMovieService {
         userMovieRepository.save(userMovie);
     }
 
-    public void deleteUserMovieStatus(String userEmail, int movieId) {
+    public void deleteUserMovieStatus(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
         
         UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
-            .orElseThrow(() -> new RuntimeException("Film non trouvé dans la liste de l'utilisateur"));
+            .orElseThrow(() -> new UserException("Film non trouvé dans la liste de l'utilisateur"));
         
         userMovieRepository.delete(userMovie);
     }
 
-    public List<UserMovieResponseDTO> getUserMovies(String userEmail) {
+    public List<UserMovieResponseDTO> getUserMovies(String userEmail) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
         
         List<UserMovie> userMovies = userMovieRepository.findAllByUserId(user.getId());
         

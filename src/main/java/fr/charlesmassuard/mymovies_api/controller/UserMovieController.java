@@ -2,6 +2,7 @@ package fr.charlesmassuard.mymovies_api.controller;
 
 import fr.charlesmassuard.mymovies_api.service.UserMovieService;
 import fr.charlesmassuard.mymovies_api.dto.UserMovieResponseDTO;
+import fr.charlesmassuard.mymovies_api.exceptions.UserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -19,42 +20,42 @@ public class UserMovieController {
     private final UserMovieService userMovieService;
     
     @PostMapping("/to-watch/{movieId}")
-    public ResponseEntity<String> addUserFilm(@PathVariable int movieId, Principal principal) {
+    public ResponseEntity<String> addUserFilm(@PathVariable int movieId, Principal principal) throws UserException {
         String userEmail = principal.getName();
         userMovieService.addToWatchlist(userEmail, movieId);
         return ResponseEntity.ok("Film ajouté à la liste");
     }
 
     @GetMapping
-    public ResponseEntity<List<UserMovieResponseDTO>> getUserMovies(Principal principal) {
+    public ResponseEntity<List<UserMovieResponseDTO>> getUserMovies(Principal principal) throws UserException {
         String userEmail = principal.getName();
         List<UserMovieResponseDTO> userMovies = userMovieService.getUserMovies(userEmail);
         return ResponseEntity.ok(userMovies);
     }
 
     @GetMapping("/status/{movieId}")
-    public ResponseEntity<String> getUserMovieStatus(@PathVariable int movieId, Principal principal) {
+    public ResponseEntity<String> getUserMovieStatus(@PathVariable int movieId, Principal principal) throws UserException {
         String userEmail = principal.getName();
         String status = userMovieService.getUserMovieStatus(userEmail, movieId);
         return ResponseEntity.ok(status);
     }
 
     @GetMapping("/watched-date/{movieId}")
-    public ResponseEntity<String> getUserMovieWatchedDate(@PathVariable int movieId, Principal principal) {
+    public ResponseEntity<String> getUserMovieWatchedDate(@PathVariable int movieId, Principal principal) throws UserException {
         String userEmail = principal.getName();
         String watchedDate = userMovieService.getUserMovieWatchedDate(userEmail, movieId);
         return ResponseEntity.ok(watchedDate);
     }
 
     @GetMapping("/rating/{movieId}")
-    public ResponseEntity<Integer> getUserMovieRating(@PathVariable int movieId, Principal principal) {
+    public ResponseEntity<Integer> getUserMovieRating(@PathVariable int movieId, Principal principal) throws UserException {
         String userEmail = principal.getName();
         Integer rating = userMovieService.getUserMovieRating(userEmail, movieId);
         return ResponseEntity.ok(rating);
     }
 
     @GetMapping("/comment/{movieId}")
-    public ResponseEntity<String> getUserMovieComment(@PathVariable int movieId, Principal principal) {
+    public ResponseEntity<String> getUserMovieComment(@PathVariable int movieId, Principal principal) throws UserException {
         String userEmail = principal.getName();
         String comment = userMovieService.getUserMovieComment(userEmail, movieId);
         return ResponseEntity.ok(comment);
@@ -65,7 +66,7 @@ public class UserMovieController {
         @PathVariable int movieId, 
         @RequestBody StatusRequest request, 
         Principal principal
-    ) {
+    ) throws UserException {
         String userEmail = principal.getName();
         userMovieService.updateUserMovieStatus(userEmail, movieId, request.status(), request.watchedAt());
         return ResponseEntity.ok("Statut du film mis à jour");
@@ -76,14 +77,14 @@ public class UserMovieController {
         @PathVariable int movieId, 
         @RequestBody RateRequest request,
         Principal principal
-    ) {
+    )throws UserException  {
         String userEmail = principal.getName();
         userMovieService.rateUserMovie(userEmail, movieId, request.rating(), request.comment());
         return ResponseEntity.ok("Note du film mise à jour");
     }
 
     @DeleteMapping("/status/{movieId}")
-    public ResponseEntity<String> deleteUserMovieStatus(@PathVariable int movieId, Principal principal) {
+    public ResponseEntity<String> deleteUserMovieStatus(@PathVariable int movieId, Principal principal) throws UserException {
         String userEmail = principal.getName();
         userMovieService.deleteUserMovieStatus(userEmail, movieId);
         return ResponseEntity.ok("Film supprimé de la liste");
