@@ -12,6 +12,10 @@ Afin de lancer le serveur, executer la commande suivante dans le repertoire cour
 ./mvnw spring-boot:run
 ```
 
+Afin que le projet se lance, les variables d'environnement suivante doivent être exportées :
+
+**TMDB_API_TOKEN**, **DB_URL**, **DB_USERNAME**, **DB_PASSWORD**
+
 ## 2. Endpoints
 
 ### 2.1 Films
