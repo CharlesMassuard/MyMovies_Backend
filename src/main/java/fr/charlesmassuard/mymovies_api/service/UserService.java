@@ -4,6 +4,8 @@ import fr.charlesmassuard.mymovies_api.model.User;
 import fr.charlesmassuard.mymovies_api.dto.UserDTO;
 import fr.charlesmassuard.mymovies_api.repository.UserRepository;
 
+import fr.charlesmassuard.mymovies_api.config.JwtUtils;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +16,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
     }
 
     public UserDTO createUser(String pseudo, String mail, String password) {
@@ -77,7 +81,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void updateUserMail(String currentMail, String newMail) {
+    public String updateUserMail(String currentMail, String newMail) {
         User user = userRepository.findByMail(currentMail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -87,6 +91,8 @@ public class UserService {
 
         user.setMail(newMail);
         userRepository.save(user);
+        String newToken = jwtUtils.generateToken(newMail);
+        return newToken;
     }
 
     public void updateUserPassword(String mail, String currentPassword, String newPassword) {

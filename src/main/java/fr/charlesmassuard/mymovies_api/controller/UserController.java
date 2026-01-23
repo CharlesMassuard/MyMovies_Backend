@@ -98,10 +98,11 @@ public class UserController {
         try {
             String currentMail = principal.getName();
             String newMail = request.get("newMail");
-            userService.updateUserMail(currentMail, newMail);
+            String newToken = userService.updateUserMail(currentMail, newMail);
             return ResponseEntity.ok(Map.of(
                     "status", "success",
-                    "message", "User mail updated successfully"
+                    "message", "User mail updated successfully",
+                    "token", newToken
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
