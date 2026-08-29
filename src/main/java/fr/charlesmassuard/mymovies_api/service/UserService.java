@@ -79,17 +79,22 @@ public class UserService {
         User user = userRepository.findByMail(mail)
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND));
 
-        if (userRepository.existsByPseudo(newPseudo)) {
-            throw new UserException("Pseudo already in use");
-        }
+        // if (userRepository.existsByPseudo(newPseudo)) {
+        //     throw new UserException("Pseudo already in use");
+        // }
 
         user.setPseudo(newPseudo);
         userRepository.save(user);
     }
 
-    public String updateUserMail(String currentMail, String newMail) throws UserException {
+    public String updateUserMail(String currentMail, String newMail, String currentPassword) throws UserException {
         User user = userRepository.findByMail(currentMail)
                 .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+                
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new UserException("Mot de passe actuel incorrect");
+        }
+
         if (userRepository.existsByMail(newMail)) {
             throw new UserException("Email already in use");
         }

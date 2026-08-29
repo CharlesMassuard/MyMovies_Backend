@@ -105,7 +105,8 @@ public class UserController {
         try {
             String currentMail = principal.getName();
             String newMail = request.get("newMail");
-            String newToken = userService.updateUserMail(currentMail, newMail);
+            String currentPassword = request.get("currentPassword");
+            String newToken = userService.updateUserMail(currentMail, newMail, currentPassword);
             return ResponseEntity.ok(Map.of(
                     STATUS, SUCCESS,
                     MESSAGE, "User mail updated successfully",

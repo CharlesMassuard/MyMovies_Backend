@@ -23,7 +23,7 @@ public class User {
     @Column(name = "user_id")
     private Integer id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String pseudo;
 
     @Column(unique = true, nullable = false)
