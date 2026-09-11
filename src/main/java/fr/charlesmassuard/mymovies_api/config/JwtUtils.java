@@ -13,17 +13,26 @@ import java.nio.charset.StandardCharsets;
 public class JwtUtils {
 
     private final Key key;
-    private static final int JWT_EXPIRATION_MS = 86400000;
+    private static final long JWT_EXPIRATION_MS = 900000;
+    private static final long REFRESH_EXPIRATION_MS = 2592000000L;
 
     public JwtUtils(@Value("${jwt.secret}") String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(String mail) {
+        return buildToken(mail, JWT_EXPIRATION_MS);
+    }
+
+    public String generateRefreshToken(String mail) {
+        return buildToken(mail, REFRESH_EXPIRATION_MS);
+    }
+
+    private String buildToken(String mail, long expiration) {
         return Jwts.builder()
                 .setSubject(mail)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + JWT_EXPIRATION_MS))
+                .setExpiration(new Date((new Date()).getTime() + expiration))
                 .signWith(key)
                 .compact();
     }

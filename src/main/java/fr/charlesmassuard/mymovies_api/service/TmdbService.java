@@ -32,6 +32,13 @@ public class TmdbService {
             .body(String.class);
     }
 
+    public String getTrendingSeries() {
+        return client.get()
+            .uri("/discover/tv?include_adult=false&language=" + LANGUAGE_FR + "&page=1&sort_by=popularity.desc")
+            .retrieve()
+            .body(String.class);
+    }
+
     public String getMoviesInTheater() {
         return client.get()
             .uri("/movie/now_playing?language=" + LANGUAGE_FR + "&region=FR&include_adult=false&page=1&sort_by=popularity.desc")
@@ -46,10 +53,30 @@ public class TmdbService {
             .body(String.class);
     }
 
+    public String getTrendingSeriesDay() {
+        return client.get()
+            .uri("/trending/tv/day?language=" + LANGUAGE_FR + "&include_adult=false&page=1&sort_by=popularity.desc&region=FR")
+            .retrieve()
+            .body(String.class);
+    }
+
     public String searchMovies(String query) {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path("/search/movie")
+                .queryParam("query", query)
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam("include_adult", "false")
+                .queryParam("page", "1")
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
+    public String searchSeries(String query) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/search/tv")
                 .queryParam("query", query)
                 .queryParam(LANGUAGE, LANGUAGE_FR)
                 .queryParam("include_adult", "false")
@@ -69,6 +96,16 @@ public class TmdbService {
             .body(String.class);
     }
 
+    public String getSerieDetails(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/tv/" + id)
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
     public Map<String, Object> getMovieDetailsMap(int id) {
         return client.get()
             .uri(MOVIE_URL  + id + "?language=" + LANGUAGE_FR)
@@ -76,10 +113,47 @@ public class TmdbService {
             .body(new ParameterizedTypeReference<Map<String, Object>>() {});
     }
 
+    public Map<String, Object> getSerieDetailsMap(int id) {
+        return client.get()
+            .uri("/tv/"  + id + "?language=" + LANGUAGE_FR)
+            .retrieve()
+            .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
+    public String getSerieSeasonDetails(String id, String seasonNumber) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/tv/" + id + "/season/" + seasonNumber)
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
+    public String getSerieEpisodeDetails(String id, String seasonNumber, String episodeNumber) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/tv/" + id + "/season/" + seasonNumber + "/episode/" + episodeNumber)
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
     public String getMovieCredits(String id) {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(MOVIE_URL + id + "/credits")
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
+    public String getSerieCredits(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path("/tv/" + id + "/credits")
                 .queryParam(LANGUAGE, LANGUAGE_FR)
                 .build())
             .retrieve()
