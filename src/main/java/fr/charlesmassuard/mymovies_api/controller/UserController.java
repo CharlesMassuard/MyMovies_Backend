@@ -27,6 +27,26 @@ public class UserController {
     private final UserService userService;
     private final JwtUtils jwtUtils;
 
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        
+        if (refreshToken != null && jwtUtils.validateToken(refreshToken)) {
+            String email = jwtUtils.getMailFromToken(refreshToken);
+            
+            //Génère un nouvel access token ET un nouveau refresh token
+            String newAccessToken = jwtUtils.generateToken(email);
+            String newRefreshToken = jwtUtils.generateRefreshToken(email);
+            
+            return ResponseEntity.ok(Map.of(
+                "token", newAccessToken,
+                "refreshToken", newRefreshToken
+            ));
+        }
+        
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> credentials) {
         try {
