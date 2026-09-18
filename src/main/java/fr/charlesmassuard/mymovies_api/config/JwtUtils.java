@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 public class JwtUtils {
 
     private final Key key;
-    private static final long JWT_EXPIRATION_MS = 900000;
+    private static final long JWT_EXPIRATION_MS = 900000; // 15 minutes
     private static final long REFRESH_EXPIRATION_MS = 2592000000L;
 
     public JwtUtils(@Value("${jwt.secret}") String secret) {
@@ -51,6 +51,8 @@ public class JwtUtils {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (Exception e) {
+            //On affiche la raison exacte de l'échec
+            System.out.println("Erreur de validation du token : " + e.getMessage());
             return false;
         }
     }

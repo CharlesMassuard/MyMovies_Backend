@@ -22,6 +22,7 @@ public class UserController {
     private static final String ERROR = "error";
     private static final String SUCCESS = "success";
     private static final String TOKEN = "token";
+    private static final String REFRESH_TOKEN = "refreshToken";
     private static final String MESSAGE_ERROR = "An unexpected error occurred";
 
     private final UserService userService;
@@ -34,7 +35,6 @@ public class UserController {
         if (refreshToken != null && jwtUtils.validateToken(refreshToken)) {
             String email = jwtUtils.getMailFromToken(refreshToken);
             
-            //Génère un nouvel access token ET un nouveau refresh token
             String newAccessToken = jwtUtils.generateToken(email);
             String newRefreshToken = jwtUtils.generateRefreshToken(email);
             
@@ -44,6 +44,8 @@ public class UserController {
             ));
         }
         
+        //Si on arrive ici c'est que le token est refusé
+        System.out.println("Refus du refreshToken !");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
@@ -54,10 +56,12 @@ public class UserController {
             String password = credentials.get("password");
             UserDTO user = userService.authenticateUser(mail, password);
             String token = jwtUtils.generateToken(mail);
+            String refreshToken = jwtUtils.generateRefreshToken(mail);
             return ResponseEntity.ok(Map.of(
                     STATUS, SUCCESS,
                     MESSAGE, "User authenticated successfully",
                     TOKEN, token,
+                    REFRESH_TOKEN, refreshToken,
                     "user", user
             ));
         } catch (RuntimeException e) {
@@ -78,10 +82,12 @@ public class UserController {
         try {
             UserDTO createdUser = userService.createUser(user.getPseudo(), user.getMail(), user.getPassword());
             String token = jwtUtils.generateToken(user.getMail());
+            String refreshToken = jwtUtils.generateRefreshToken(user.getMail());
             return ResponseEntity.ok(Map.of(
                     STATUS, SUCCESS,
                     MESSAGE, "User created successfully",
                     TOKEN, token,
+                    REFRESH_TOKEN, refreshToken,
                     "user", createdUser
             ));
         } catch (RuntimeException e) {
