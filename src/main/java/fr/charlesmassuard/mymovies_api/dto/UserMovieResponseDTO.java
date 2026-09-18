@@ -1,5 +1,6 @@
 package fr.charlesmassuard.mymovies_api.dto;
 
+import java.time.LocalDateTime;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -18,4 +19,6 @@ public class UserMovieResponseDTO {
     private int rating;
     private Status status;
     private MovieDTO movie;
+    private LocalDateTime dateAdded;
+    private LocalDateTime dateViewed;
 }

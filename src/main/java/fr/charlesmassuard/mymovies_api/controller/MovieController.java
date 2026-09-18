@@ -40,4 +40,20 @@ public class MovieController {
     public String getMovieCredits(@PathVariable String id) {
         return tmdb.getMovieCredits(id);
     }
+
+    //Nouvelles-routes-pour-le-front
+    @GetMapping("/{id}/similar")
+    public String getSimilarMovies(@PathVariable String id) {
+        return tmdb.getMovieSimilar(id);
+    }
+
+    @GetMapping("/{id}/videos")
+    public String getMovieVideos(@PathVariable String id) {
+        return tmdb.getMovieVideos(id);
+    }
+
+    @GetMapping("/{id}/providers")
+    public String getMovieProviders(@PathVariable String id) {
+        return tmdb.getMovieProviders(id);
+    }
 }

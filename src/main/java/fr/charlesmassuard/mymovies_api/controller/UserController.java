@@ -2,6 +2,7 @@ package fr.charlesmassuard.mymovies_api.controller;
 
 import fr.charlesmassuard.mymovies_api.config.JwtUtils;
 import fr.charlesmassuard.mymovies_api.dto.UserDTO;
+import fr.charlesmassuard.mymovies_api.exceptions.UserException;
 import fr.charlesmassuard.mymovies_api.service.UserService;
 import lombok.RequiredArgsConstructor;
 
@@ -44,7 +45,6 @@ public class UserController {
             ));
         }
         
-        //Si on arrive ici c'est que le token est refusé
         System.out.println("Refus du refreshToken !");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
@@ -64,7 +64,7 @@ public class UserController {
                     REFRESH_TOKEN, refreshToken,
                     "user", user
             ));
-        } catch (RuntimeException e) {
+        } catch (UserException e) { // <-- Remplacement de RuntimeException par UserException
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                 STATUS, ERROR,
                 MESSAGE, e.getMessage()
@@ -90,7 +90,7 @@ public class UserController {
                     REFRESH_TOKEN, refreshToken,
                     "user", createdUser
             ));
-        } catch (RuntimeException e) {
+        } catch (UserException e) { // <-- Remplacement ici aussi
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                 STATUS, ERROR,
                 MESSAGE, e.getMessage()
@@ -113,7 +113,7 @@ public class UserController {
                     STATUS, SUCCESS,
                     MESSAGE, "User pseudo updated successfully"
             ));
-        } catch (RuntimeException e) {
+        } catch (UserException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                 STATUS, ERROR,
                 MESSAGE, e.getMessage()
@@ -138,7 +138,7 @@ public class UserController {
                     MESSAGE, "User mail updated successfully",
                     TOKEN, newToken
             ));
-        } catch (RuntimeException e) {
+        } catch (UserException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                 STATUS, ERROR,
                 MESSAGE, e.getMessage()
@@ -162,7 +162,7 @@ public class UserController {
                     STATUS, SUCCESS,
                     MESSAGE, "User password updated successfully"
             ));
-        } catch (RuntimeException e) {
+        } catch (UserException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                 STATUS, ERROR,
                 MESSAGE, e.getMessage()
@@ -184,7 +184,7 @@ public class UserController {
                     STATUS, SUCCESS,
                     MESSAGE, "User deleted successfully"
             ));
-        } catch (RuntimeException e) {
+        } catch (UserException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                 STATUS, ERROR,
                 MESSAGE, e.getMessage()
