@@ -220,4 +220,24 @@ public class TmdbService {
             .retrieve()
             .body(String.class);
     }
+
+    public Map<String, Object> getMovieRecommendationsMap(int id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(MOVIE_URL + id + "/recommendations")
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
+    public Map<String, Object> getSerieRecommendationsMap(int id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(TV_URL + id + "/recommendations")
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
 }
