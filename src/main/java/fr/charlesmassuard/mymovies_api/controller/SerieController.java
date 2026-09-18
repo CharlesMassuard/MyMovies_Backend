@@ -45,4 +45,20 @@ public class SerieController {
     public String getSerieEpisodeDetails(@PathVariable String id, @PathVariable String seasonNumber, @PathVariable String episodeNumber) {
         return tmdb.getSerieEpisodeDetails(id, seasonNumber, episodeNumber);
     }
+
+    //Nouvelles-routes-pour-le-front
+    @GetMapping("/{id}/similar")
+    public String getSimilarSeries(@PathVariable String id) {
+        return tmdb.getSerieSimilar(id);
+    }
+
+    @GetMapping("/{id}/videos")
+    public String getSerieVideos(@PathVariable String id) {
+        return tmdb.getSerieVideos(id);
+    }
+
+    @GetMapping("/{id}/providers")
+    public String getSerieProviders(@PathVariable String id) {
+        return tmdb.getSerieProviders(id);
+    }
 }

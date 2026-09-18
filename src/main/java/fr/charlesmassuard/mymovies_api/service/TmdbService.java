@@ -14,6 +14,7 @@ public class TmdbService {
     private final RestClient client;
 
     private static final String MOVIE_URL = "/movie/";
+    private static final String TV_URL = "/tv/";
     private static final String LANGUAGE = "language";
     private static final String LANGUAGE_FR = "fr-FR";
 
@@ -99,7 +100,7 @@ public class TmdbService {
     public String getSerieDetails(String id) {
         return client.get()
             .uri(uriBuilder -> uriBuilder
-                .path("/tv/" + id)
+                .path(TV_URL + id)
                 .queryParam(LANGUAGE, LANGUAGE_FR)
                 .build())
             .retrieve()
@@ -115,7 +116,7 @@ public class TmdbService {
 
     public Map<String, Object> getSerieDetailsMap(int id) {
         return client.get()
-            .uri("/tv/"  + id + "?language=" + LANGUAGE_FR)
+            .uri(TV_URL  + id + "?language=" + LANGUAGE_FR)
             .retrieve()
             .body(new ParameterizedTypeReference<Map<String, Object>>() {});
     }
@@ -123,7 +124,7 @@ public class TmdbService {
     public String getSerieSeasonDetails(String id, String seasonNumber) {
         return client.get()
             .uri(uriBuilder -> uriBuilder
-                .path("/tv/" + id + "/season/" + seasonNumber)
+                .path(TV_URL + id + "/season/" + seasonNumber)
                 .queryParam(LANGUAGE, LANGUAGE_FR)
                 .build())
             .retrieve()
@@ -133,7 +134,7 @@ public class TmdbService {
     public String getSerieEpisodeDetails(String id, String seasonNumber, String episodeNumber) {
         return client.get()
             .uri(uriBuilder -> uriBuilder
-                .path("/tv/" + id + "/season/" + seasonNumber + "/episode/" + episodeNumber)
+                .path(TV_URL + id + "/season/" + seasonNumber + "/episode/" + episodeNumber)
                 .queryParam(LANGUAGE, LANGUAGE_FR)
                 .build())
             .retrieve()
@@ -153,8 +154,68 @@ public class TmdbService {
     public String getSerieCredits(String id) {
         return client.get()
             .uri(uriBuilder -> uriBuilder
-                .path("/tv/" + id + "/credits")
+                .path(TV_URL + id + "/credits")
                 .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
+    //Méthodes-pour-récupérer-les-similaires,-les-vidéos-et-les-plateformes
+    public String getMovieSimilar(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(MOVIE_URL + id + "/recommendations")
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
+    public String getSerieSimilar(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(TV_URL + id + "/recommendations")
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
+    public String getMovieVideos(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(MOVIE_URL + id + "/videos")
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
+    public String getSerieVideos(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(TV_URL + id + "/videos")
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
+    //Note-les-providers-n'ont-pas-toujours-besoin-du-paramètre-langue-mais-c'est-mieux-pour-TMDB
+    public String getMovieProviders(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(MOVIE_URL + id + "/watch/providers")
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
+    public String getSerieProviders(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(TV_URL + id + "/watch/providers")
                 .build())
             .retrieve()
             .body(String.class);
