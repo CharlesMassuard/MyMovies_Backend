@@ -66,6 +66,7 @@ public class UserMovieService {
         userMovie.setRating(rating);
         userMovie.setCommentaire(comment);
         userMovie.setStatus(Status.WATCHED);
+        
         if(userMovie.getDateViewed() == null){
             userMovie.setDateViewed(LocalDateTime.now());
         }
@@ -147,14 +148,26 @@ public class UserMovieService {
             .orElseThrow(() -> new UserException("Film non trouvé dans la liste de l'utilisateur"));
         
         userMovie.setStatus(status);
+        
         if(status == Status.WATCHED) {
             if (watchedAtStr != null && !watchedAtStr.isEmpty()) {
                 LocalDate watchedAt = LocalDate.parse(watchedAtStr);
-                userMovie.setDateViewed(watchedAt.atStartOfDay());
+                
+                // CORRECTION ICI : Si c'est aujourd'hui, on met l'heure exacte
+                if (watchedAt.equals(LocalDate.now())) {
+                    userMovie.setDateViewed(LocalDateTime.now());
+                } else {
+                    userMovie.setDateViewed(watchedAt.atTime(12, 0)); // Midi par défaut
+                }
             } else if (userMovie.getDateViewed() == null) {
                 userMovie.setDateViewed(LocalDateTime.now());
             }
+        } else {
+            // Optionnel : Mettre à jour la date d'ajout si le statut passe à "En cours" 
+            // pour qu'il remonte aussi à la première place
+            userMovie.setDateAdded(LocalDateTime.now());
         }
+        
         userMovieRepository.save(userMovie);
     }
 
@@ -190,6 +203,8 @@ public class UserMovieService {
                 .rating(um.getRating())
                 .status(um.getStatus())
                 .movie(movieDTO)
+                .dateAdded(um.getDateAdded())
+                .dateViewed(um.getDateViewed())
                 .build();
         }).toList();
     }

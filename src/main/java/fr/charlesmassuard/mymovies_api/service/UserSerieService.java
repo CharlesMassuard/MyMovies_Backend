@@ -66,6 +66,7 @@ public class UserSerieService {
         userSerie.setRating(rating);
         userSerie.setCommentaire(comment);
         userSerie.setStatus(Status.WATCHED);
+        
         if(userSerie.getDateViewed() == null){
             userSerie.setDateViewed(LocalDateTime.now());
         }
@@ -77,11 +78,9 @@ public class UserSerieService {
             .orElseGet(() -> {
                 Map<String, Object> data = tmdbService.getSerieDetailsMap(serieId);
                 
-                //Gestion des dates de séries
                 String airDateStr = (String) data.get("first_air_date");
                 LocalDate airDate = (airDateStr != null && !airDateStr.isBlank()) ? LocalDate.parse(airDateStr) : null;
                 
-                //La durée d'un épisode est un tableau sur les séries
                 int runtime = 0;
                 if (data.get("episode_run_time") instanceof List<?> runtimes && !runtimes.isEmpty()) {
                     runtime = ((Number) runtimes.get(0)).intValue();
@@ -89,7 +88,7 @@ public class UserSerieService {
 
                 Serie serieFromTmdb = Serie.builder()
                     .id(serieId)
-                    .title((String) data.get("name")) //TMDB Series = name
+                    .title((String) data.get("name"))
                     .releaseDate(airDate)
                     .resume((String) data.get("overview"))
                     .posterUrl((String) data.get("poster_path"))
@@ -158,14 +157,25 @@ public class UserSerieService {
             .orElseThrow(() -> new UserException("Série non trouvée dans la liste de l'utilisateur"));
         
         userSerie.setStatus(status);
+        
         if(status == Status.WATCHED) {
             if (watchedAtStr != null && !watchedAtStr.isEmpty()) {
                 LocalDate watchedAt = LocalDate.parse(watchedAtStr);
-                userSerie.setDateViewed(watchedAt.atStartOfDay());
+                
+                // CORRECTION ICI : Si c'est aujourd'hui, on met l'heure exacte
+                if (watchedAt.equals(LocalDate.now())) {
+                    userSerie.setDateViewed(LocalDateTime.now());
+                } else {
+                    userSerie.setDateViewed(watchedAt.atTime(12, 0)); // Midi par défaut
+                }
             } else if (userSerie.getDateViewed() == null) {
                 userSerie.setDateViewed(LocalDateTime.now());
             }
+        } else {
+            // Optionnel : Mettre à jour la date d'ajout si le statut passe à "En cours"
+            userSerie.setDateAdded(LocalDateTime.now());
         }
+        
         userSerieRepository.save(userSerie);
     }
 
@@ -201,6 +211,8 @@ public class UserSerieService {
                 .rating(us.getRating())
                 .status(us.getStatus())
                 .serie(serieDTO)
+                .dateAdded(us.getDateAdded())
+                .dateViewed(us.getDateViewed())
                 .build();
         }).toList();
     }
