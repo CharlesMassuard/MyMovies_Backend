@@ -27,13 +27,12 @@ public class UserSerieService {
     private final UserRepository userRepository;
     private final SerieRepository serieRepository;
     private final TmdbService tmdbService;
-
-    private static final String USER_NOT_FOUND = "Utilisateur non trouvé";
+    private final I18nService i18n;
     private static final String UNDEFINED = "UNDEFINED";
 
     public void addToWatchlist(String userEmail, int serieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         Serie serie = getOrCreateSerie(serieId);
         
@@ -50,7 +49,7 @@ public class UserSerieService {
 
     public void rateUserSerie(String userEmail, int serieId, int rating, String comment) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         Serie serie = getOrCreateSerie(serieId);
 
@@ -105,7 +104,7 @@ public class UserSerieService {
 
     public String getUserSerieStatus(String userEmail, int serieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         return userSerieRepository.findByUserIdAndSerieId(user.getId(), serieId)
             .map(us -> us.getStatus().name())
             .orElse(UNDEFINED);
@@ -113,7 +112,7 @@ public class UserSerieService {
 
     public String getUserSerieWatchedDate(String userEmail, int serieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         return userSerieRepository.findByUserIdAndSerieId(user.getId(), serieId)
             .map(us -> {
@@ -126,7 +125,7 @@ public class UserSerieService {
 
     public Integer getUserSerieRating(String userEmail, int serieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
             
         return userSerieRepository.findByUserIdAndSerieId(user.getId(), serieId)
             .map(UserSerie::getRating)
@@ -135,7 +134,7 @@ public class UserSerieService {
 
     public String getUserSerieComment(String userEmail, int serieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         return userSerieRepository.findByUserIdAndSerieId(user.getId(), serieId)
             .map(us -> us.getCommentaire() != null ? us.getCommentaire() : "NO_COMMENT")
@@ -144,17 +143,17 @@ public class UserSerieService {
 
     public void updateUserSerieStatus(String userEmail, int serieId, String statusStr, String watchedAtStr) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         Status status;
         try {
             status = Status.valueOf(statusStr);
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Statut invalide", e);
+            throw new IllegalArgumentException(i18n.get("error.invalidStatus"), e);
         }
         
         UserSerie userSerie = userSerieRepository.findByUserIdAndSerieId(user.getId(), serieId)
-            .orElseThrow(() -> new UserException("Série non trouvée dans la liste de l'utilisateur"));
+            .orElseThrow(() -> new UserException(i18n.get("error.seriesNotFound")));
         
         userSerie.setStatus(status);
         
@@ -181,17 +180,17 @@ public class UserSerieService {
 
     public void deleteUserSerieStatus(String userEmail, int serieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         UserSerie userSerie = userSerieRepository.findByUserIdAndSerieId(user.getId(), serieId)
-            .orElseThrow(() -> new UserException("Série non trouvée dans la liste de l'utilisateur"));
+            .orElseThrow(() -> new UserException(i18n.get("error.seriesNotFound")));
         
         userSerieRepository.delete(userSerie);
     }
 
     public List<UserSerieResponseDTO> getUserSeries(String userEmail) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         List<UserSerie> userSeries = userSerieRepository.findAllByUserId(user.getId());
         

@@ -27,13 +27,12 @@ public class UserMovieService {
     private final UserRepository userRepository;
     private final MovieRepository movieRepository;
     private final TmdbService tmdbService;
-
-    private static final String USER_NOT_FOUND = "Utilisateur non trouvé";
+    private final I18nService i18n;
     private static final String UNDEFINED = "UNDEFINED";
 
     public void addToWatchlist(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         Movie movie = getOrCreateMovie(movieId);
         
@@ -50,7 +49,7 @@ public class UserMovieService {
 
     public void rateUserMovie(String userEmail, int movieId, int rating, String comment) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         Movie movie = getOrCreateMovie(movieId);
 
@@ -96,7 +95,7 @@ public class UserMovieService {
 
     public String getUserMovieStatus(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
             .map(um -> um.getStatus().name())
             .orElse(UNDEFINED);
@@ -104,7 +103,7 @@ public class UserMovieService {
 
     public String getUserMovieWatchedDate(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
             .map(um -> {
@@ -117,7 +116,7 @@ public class UserMovieService {
 
     public Integer getUserMovieRating(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
             
         return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
             .map(UserMovie::getRating)
@@ -126,7 +125,7 @@ public class UserMovieService {
 
     public String getUserMovieComment(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         return userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
             .map(um -> um.getCommentaire() != null ? um.getCommentaire() : "NO_COMMENT")
@@ -135,17 +134,17 @@ public class UserMovieService {
 
     public void updateUserMovieStatus(String userEmail, int movieId, String statusStr, String watchedAtStr) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         Status status;
         try {
             status = Status.valueOf(statusStr);
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Statut invalide", e);
+            throw new IllegalArgumentException(i18n.get("error.invalidStatus"), e);
         }
         
         UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
-            .orElseThrow(() -> new UserException("Film non trouvé dans la liste de l'utilisateur"));
+            .orElseThrow(() -> new UserException(i18n.get("error.movieNotFound")));
         
         userMovie.setStatus(status);
         
@@ -173,17 +172,17 @@ public class UserMovieService {
 
     public void deleteUserMovieStatus(String userEmail, int movieId) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
-            .orElseThrow(() -> new UserException("Film non trouvé dans la liste de l'utilisateur"));
+            .orElseThrow(() -> new UserException(i18n.get("error.movieNotFound")));
         
         userMovieRepository.delete(userMovie);
     }
 
     public List<UserMovieResponseDTO> getUserMovies(String userEmail) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
         
         List<UserMovie> userMovies = userMovieRepository.findAllByUserId(user.getId());
         
