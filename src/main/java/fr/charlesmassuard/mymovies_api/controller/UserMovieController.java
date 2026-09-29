@@ -1,6 +1,7 @@
 package fr.charlesmassuard.mymovies_api.controller;
 
 import fr.charlesmassuard.mymovies_api.service.UserMovieService;
+import fr.charlesmassuard.mymovies_api.service.I18nService;
 import fr.charlesmassuard.mymovies_api.dto.UserMovieResponseDTO;
 import fr.charlesmassuard.mymovies_api.exceptions.UserException;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,13 @@ public class UserMovieController {
     public record StatusRequest(String status, String watchedAt) {}
     public record RateRequest(int rating, String comment) {}
     private final UserMovieService userMovieService;
+    private final I18nService i18n;
     
     @PostMapping("/to-watch/{movieId}")
     public ResponseEntity<String> addUserFilm(@PathVariable int movieId, Principal principal) throws UserException {
         String userEmail = principal.getName();
         userMovieService.addToWatchlist(userEmail, movieId);
-        return ResponseEntity.ok("Film ajouté à la liste");
+        return ResponseEntity.ok(i18n.get("watchlist.movieAdded"));
     }
 
     @GetMapping
@@ -69,7 +71,7 @@ public class UserMovieController {
     ) throws UserException {
         String userEmail = principal.getName();
         userMovieService.updateUserMovieStatus(userEmail, movieId, request.status(), request.watchedAt());
-        return ResponseEntity.ok("Statut du film mis à jour");
+        return ResponseEntity.ok(i18n.get("watchlist.movieStatusUpdated"));
     }
 
     @PutMapping("/rate/{movieId}")
@@ -80,13 +82,13 @@ public class UserMovieController {
     )throws UserException  {
         String userEmail = principal.getName();
         userMovieService.rateUserMovie(userEmail, movieId, request.rating(), request.comment());
-        return ResponseEntity.ok("Note du film mise à jour");
+        return ResponseEntity.ok(i18n.get("watchlist.movieRatingUpdated"));
     }
 
     @DeleteMapping("/status/{movieId}")
     public ResponseEntity<String> deleteUserMovieStatus(@PathVariable int movieId, Principal principal) throws UserException {
         String userEmail = principal.getName();
         userMovieService.deleteUserMovieStatus(userEmail, movieId);
-        return ResponseEntity.ok("Film supprimé de la liste");
+        return ResponseEntity.ok(i18n.get("watchlist.movieRemoved"));
     }
 }

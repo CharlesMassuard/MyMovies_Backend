@@ -8,6 +8,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import jakarta.servlet.http.HttpServletResponse; // Nouvel import
+import fr.charlesmassuard.mymovies_api.service.I18nService;
 
 import java.util.List;
 
@@ -15,9 +16,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final I18nService i18n;
 
-    public SecurityConfig(JwtFilter jwtFilter) {
+    public SecurityConfig(JwtFilter jwtFilter, I18nService i18n) {
         this.jwtFilter = jwtFilter;
+        this.i18n = i18n;
     }
 
     @Bean
@@ -30,7 +33,7 @@ public class SecurityConfig {
             // AJOUT: Force Spring à renvoyer 401 (Unauthorized) au lieu de 403 (Forbidden)
             .exceptionHandling(exc -> exc
                 .authenticationEntryPoint((request, response, authException) -> {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, i18n.get("error.unauthorized"));
                 })
             )
             

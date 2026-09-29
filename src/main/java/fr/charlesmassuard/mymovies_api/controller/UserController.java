@@ -4,6 +4,7 @@ import fr.charlesmassuard.mymovies_api.config.JwtUtils;
 import fr.charlesmassuard.mymovies_api.dto.UserDTO;
 import fr.charlesmassuard.mymovies_api.exceptions.UserException;
 import fr.charlesmassuard.mymovies_api.service.UserService;
+import fr.charlesmassuard.mymovies_api.service.I18nService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
@@ -24,10 +25,9 @@ public class UserController {
     private static final String SUCCESS = "success";
     private static final String TOKEN = "token";
     private static final String REFRESH_TOKEN = "refreshToken";
-    private static final String MESSAGE_ERROR = "An unexpected error occurred";
-
     private final UserService userService;
     private final JwtUtils jwtUtils;
+    private final I18nService i18n;
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
@@ -59,7 +59,7 @@ public class UserController {
             String refreshToken = jwtUtils.generateRefreshToken(mail);
             return ResponseEntity.ok(Map.of(
                     STATUS, SUCCESS,
-                    MESSAGE, "User authenticated successfully",
+                    MESSAGE, i18n.get("auth.loginSuccess"),
                     TOKEN, token,
                     REFRESH_TOKEN, refreshToken,
                     "user", user
@@ -72,7 +72,7 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     STATUS, ERROR,
-                    MESSAGE, MESSAGE_ERROR
+                    MESSAGE, i18n.get("error.unexpected")
             ));
         }
     }
@@ -85,7 +85,7 @@ public class UserController {
             String refreshToken = jwtUtils.generateRefreshToken(user.getMail());
             return ResponseEntity.ok(Map.of(
                     STATUS, SUCCESS,
-                    MESSAGE, "User created successfully",
+                    MESSAGE, i18n.get("auth.registerSuccess"),
                     TOKEN, token,
                     REFRESH_TOKEN, refreshToken,
                     "user", createdUser
@@ -98,7 +98,7 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     STATUS, ERROR,
-                    MESSAGE, MESSAGE_ERROR
+                    MESSAGE, i18n.get("error.unexpected")
             ));
         }
     }
@@ -111,7 +111,7 @@ public class UserController {
             userService.updateUserPseudo(currentMail, newPseudo);
             return ResponseEntity.ok(Map.of(
                     STATUS, SUCCESS,
-                    MESSAGE, "User pseudo updated successfully"
+                    MESSAGE, i18n.get("auth.pseudoUpdated")
             ));
         } catch (UserException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
@@ -121,7 +121,7 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     STATUS, ERROR,
-                    MESSAGE, MESSAGE_ERROR
+                    MESSAGE, i18n.get("error.unexpected")
             ));
         }
     }
@@ -135,7 +135,7 @@ public class UserController {
             String newToken = userService.updateUserMail(currentMail, newMail, currentPassword);
             return ResponseEntity.ok(Map.of(
                     STATUS, SUCCESS,
-                    MESSAGE, "User mail updated successfully",
+                    MESSAGE, i18n.get("auth.emailUpdated"),
                     TOKEN, newToken
             ));
         } catch (UserException e) {
@@ -146,7 +146,7 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     STATUS, ERROR,
-                    MESSAGE, MESSAGE_ERROR
+                    MESSAGE, i18n.get("error.unexpected")
             ));
         }
     }
@@ -160,7 +160,7 @@ public class UserController {
             userService.updateUserPassword(currentMail, currentPassword, newPassword);
             return ResponseEntity.ok(Map.of(
                     STATUS, SUCCESS,
-                    MESSAGE, "User password updated successfully"
+                    MESSAGE, i18n.get("auth.passwordUpdated")
             ));
         } catch (UserException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
@@ -170,7 +170,7 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     STATUS, ERROR,
-                    MESSAGE, MESSAGE_ERROR
+                    MESSAGE, i18n.get("error.unexpected")
             ));
         }
     }
@@ -182,7 +182,7 @@ public class UserController {
             userService.deleteUser(mail);
             return ResponseEntity.ok(Map.of(
                     STATUS, SUCCESS,
-                    MESSAGE, "User deleted successfully"
+                    MESSAGE, i18n.get("auth.userDeleted")
             ));
         } catch (UserException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
@@ -192,7 +192,7 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     STATUS, ERROR,
-                    MESSAGE, MESSAGE_ERROR
+                    MESSAGE, i18n.get("error.unexpected")
             ));
         }
     }

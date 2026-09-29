@@ -20,22 +20,22 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final UserMovieRepository userMovieRepository;
+    private final I18nService i18n;
 
-    private static final String USER_NOT_FOUND = "User not found";
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, UserMovieRepository userMovieRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, UserMovieRepository userMovieRepository, I18nService i18n) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.userMovieRepository = userMovieRepository;
+        this.i18n = i18n;
     }
 
     public UserDTO createUser(String pseudo, String mail, String password) throws UserException {
         if (userRepository.existsByPseudo(pseudo)) {
-            throw new UserException("Pseudo already in use");
+            throw new UserException(i18n.get("error.pseudoTaken"));
         }
         if (userRepository.existsByMail(mail)) {
-            throw new UserException("Email already in use");
+            throw new UserException(i18n.get("error.emailTaken"));
         }
         User user = User.builder()
                 .pseudo(pseudo)
@@ -57,10 +57,10 @@ public class UserService {
 
     public UserDTO authenticateUser(String mail, String password) throws UserException {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new UserException("Invalid password");
+            throw new UserException(i18n.get("error.invalidPassword"));
         }
 
         user.setLastLoginDate(LocalDateTime.now());
@@ -77,10 +77,10 @@ public class UserService {
 
     public void updateUserPseudo(String mail, String newPseudo) throws UserException {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
 
         // if (userRepository.existsByPseudo(newPseudo)) {
-        //     throw new UserException("Pseudo already in use");
+        //     throw new UserException(i18n.get("error.pseudoTaken"));
         // }
 
         user.setPseudo(newPseudo);
@@ -89,14 +89,14 @@ public class UserService {
 
     public String updateUserMail(String currentMail, String newMail, String currentPassword) throws UserException {
         User user = userRepository.findByMail(currentMail)
-                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
                 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new UserException("Mot de passe actuel incorrect");
+            throw new UserException(i18n.get("error.currentPassword"));
         }
 
         if (userRepository.existsByMail(newMail)) {
-            throw new UserException("Email already in use");
+            throw new UserException(i18n.get("error.emailTaken"));
         }
 
         user.setMail(newMail);
@@ -106,10 +106,10 @@ public class UserService {
 
     public void updateUserPassword(String mail, String currentPassword, String newPassword) throws UserException {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new UserException("Current password is incorrect");
+            throw new UserException(i18n.get("error.currentPassword"));
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -119,11 +119,10 @@ public class UserService {
     @Transactional
     public void deleteUser(String mail) throws UserException {
         User user = userRepository.findByMail(mail)
-                .orElseThrow(() -> new UserException(USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
 
         userMovieRepository.deleteAllByUserId(user.getId());
 
         userRepository.delete(user);
     }
 }
-

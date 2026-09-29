@@ -17,9 +17,10 @@ public class TmdbService {
     private static final String TV_URL = "/tv/";
     private static final String PERSON_URL = "/person/";
     private static final String LANGUAGE = "language";
-    private static final String LANGUAGE_FR = "fr-FR";
+    private final I18nService i18n;
 
-    public TmdbService(@Value("${tmdb.api.token}") String token) {
+    public TmdbService(@Value("${tmdb.api.token}") String token, I18nService i18n) {
+        this.i18n = i18n;
         this.client = RestClient.builder()
             .baseUrl("https://api.themoviedb.org/3")
             .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
@@ -29,35 +30,35 @@ public class TmdbService {
 
     public String getTrendingMovies() {
         return client.get()
-            .uri("/discover/movie?include_adult=false&language=" + LANGUAGE_FR + "&page=1&sort_by=popularity.desc")
+            .uri("/discover/movie?include_adult=false&language=" + i18n.tmdbLanguage() + "&page=1&sort_by=popularity.desc")
             .retrieve()
             .body(String.class);
     }
 
     public String getTrendingSeries() {
         return client.get()
-            .uri("/discover/tv?include_adult=false&language=" + LANGUAGE_FR + "&page=1&sort_by=popularity.desc")
+            .uri("/discover/tv?include_adult=false&language=" + i18n.tmdbLanguage() + "&page=1&sort_by=popularity.desc")
             .retrieve()
             .body(String.class);
     }
 
     public String getMoviesInTheater() {
         return client.get()
-            .uri("/movie/now_playing?language=" + LANGUAGE_FR + "&region=FR&include_adult=false&page=1&sort_by=popularity.desc")
+            .uri("/movie/now_playing?language=" + i18n.tmdbLanguage() + "&region=FR&include_adult=false&page=1&sort_by=popularity.desc")
             .retrieve()
             .body(String.class);
     }
 
     public String getTrendingMoviesDay() {
         return client.get()
-            .uri("/trending/movie/day?language=" + LANGUAGE_FR + "&include_adult=false&page=1&sort_by=popularity.desc&region=FR")
+            .uri("/trending/movie/day?language=" + i18n.tmdbLanguage() + "&include_adult=false&page=1&sort_by=popularity.desc&region=FR")
             .retrieve()
             .body(String.class);
     }
 
     public String getTrendingSeriesDay() {
         return client.get()
-            .uri("/trending/tv/day?language=" + LANGUAGE_FR + "&include_adult=false&page=1&sort_by=popularity.desc&region=FR")
+            .uri("/trending/tv/day?language=" + i18n.tmdbLanguage() + "&include_adult=false&page=1&sort_by=popularity.desc&region=FR")
             .retrieve()
             .body(String.class);
     }
@@ -67,7 +68,7 @@ public class TmdbService {
             .uri(uriBuilder -> uriBuilder
                 .path("/search/movie")
                 .queryParam("query", query)
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .queryParam("include_adult", "false")
                 .queryParam("page", "1")
                 .build())
@@ -80,7 +81,7 @@ public class TmdbService {
             .uri(uriBuilder -> uriBuilder
                 .path("/search/tv")
                 .queryParam("query", query)
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .queryParam("include_adult", "false")
                 .queryParam("page", "1")
                 .build())
@@ -92,7 +93,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(MOVIE_URL + id)
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);
@@ -102,7 +103,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(TV_URL + id)
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);
@@ -110,14 +111,14 @@ public class TmdbService {
 
     public Map<String, Object> getMovieDetailsMap(int id) {
         return client.get()
-            .uri(MOVIE_URL  + id + "?language=" + LANGUAGE_FR)
+            .uri(MOVIE_URL  + id + "?language=" + i18n.tmdbLanguage())
             .retrieve()
             .body(new ParameterizedTypeReference<Map<String, Object>>() {});
     }
 
     public Map<String, Object> getSerieDetailsMap(int id) {
         return client.get()
-            .uri(TV_URL  + id + "?language=" + LANGUAGE_FR)
+            .uri(TV_URL  + id + "?language=" + i18n.tmdbLanguage())
             .retrieve()
             .body(new ParameterizedTypeReference<Map<String, Object>>() {});
     }
@@ -126,7 +127,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(TV_URL + id + "/season/" + seasonNumber)
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);
@@ -136,7 +137,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(TV_URL + id + "/season/" + seasonNumber + "/episode/" + episodeNumber)
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);
@@ -146,7 +147,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(MOVIE_URL + id + "/credits")
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);
@@ -156,7 +157,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(TV_URL + id + "/credits")
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);
@@ -167,7 +168,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(MOVIE_URL + id + "/recommendations")
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);
@@ -177,7 +178,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(TV_URL + id + "/recommendations")
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);
@@ -187,7 +188,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(MOVIE_URL + id + "/videos")
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);
@@ -197,7 +198,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(TV_URL + id + "/videos")
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);
@@ -226,7 +227,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(MOVIE_URL + id + "/recommendations")
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(new ParameterizedTypeReference<Map<String, Object>>() {});
@@ -236,7 +237,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(TV_URL + id + "/recommendations")
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(new ParameterizedTypeReference<Map<String, Object>>() {});
@@ -246,7 +247,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(PERSON_URL + id)
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);
@@ -256,7 +257,7 @@ public class TmdbService {
         return client.get()
             .uri(uriBuilder -> uriBuilder
                 .path(PERSON_URL + id + "/combined_credits")
-                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .queryParam(LANGUAGE, i18n.tmdbLanguage())
                 .build())
             .retrieve()
             .body(String.class);

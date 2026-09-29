@@ -1,6 +1,7 @@
 package fr.charlesmassuard.mymovies_api.controller;
 
 import fr.charlesmassuard.mymovies_api.service.UserSerieService;
+import fr.charlesmassuard.mymovies_api.service.I18nService;
 import fr.charlesmassuard.mymovies_api.dto.UserSerieResponseDTO;
 import fr.charlesmassuard.mymovies_api.exceptions.UserException;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,13 @@ public class UserSerieController {
     public record RateRequest(int rating, String comment) {}
     
     private final UserSerieService userSerieService;
+    private final I18nService i18n;
     
     @PostMapping("/to-watch/{serieId}")
     public ResponseEntity<String> addUserSerie(@PathVariable int serieId, Principal principal) throws UserException {
         String userEmail = principal.getName();
         userSerieService.addToWatchlist(userEmail, serieId);
-        return ResponseEntity.ok("Série ajoutée à la liste");
+        return ResponseEntity.ok(i18n.get("watchlist.seriesAdded"));
     }
 
     @GetMapping
@@ -69,7 +71,7 @@ public class UserSerieController {
     ) throws UserException {
         String userEmail = principal.getName();
         userSerieService.updateUserSerieStatus(userEmail, serieId, request.status(), request.watchedAt());
-        return ResponseEntity.ok("Statut de la série mis à jour");
+        return ResponseEntity.ok(i18n.get("watchlist.seriesStatusUpdated"));
     }
 
     @PutMapping("/rate/{serieId}")
@@ -80,13 +82,13 @@ public class UserSerieController {
     )throws UserException  {
         String userEmail = principal.getName();
         userSerieService.rateUserSerie(userEmail, serieId, request.rating(), request.comment());
-        return ResponseEntity.ok("Note de la série mise à jour");
+        return ResponseEntity.ok(i18n.get("watchlist.seriesRatingUpdated"));
     }
 
     @DeleteMapping("/status/{serieId}")
     public ResponseEntity<String> deleteUserSerieStatus(@PathVariable int serieId, Principal principal) throws UserException {
         String userEmail = principal.getName();
         userSerieService.deleteUserSerieStatus(userEmail, serieId);
-        return ResponseEntity.ok("Série supprimée de la liste");
+        return ResponseEntity.ok(i18n.get("watchlist.seriesRemoved"));
     }
 }

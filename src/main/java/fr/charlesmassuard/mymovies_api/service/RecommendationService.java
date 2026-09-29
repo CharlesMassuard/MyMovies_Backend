@@ -25,6 +25,7 @@ public class RecommendationService {
     private final UserMovieRepository userMovieRepository;
     private final UserSerieRepository userSerieRepository;
     private final TmdbService tmdbService;
+    private final I18nService i18n;
 
     // Système de cache en mémoire
     private static class CacheEntry {
@@ -41,13 +42,13 @@ public class RecommendationService {
 
     public List<RecommendationItemDTO> getGeneralRecommendations(String userEmail, boolean forceRefresh) throws UserException {
         User user = userRepository.findByMail(userEmail)
-            .orElseThrow(() -> new UserException("Utilisateur non trouvé"));
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
 
         LocalDate today = LocalDate.now();
 
         // 1. Vérifier si on a un cache valide pour aujourd'hui
         if (!forceRefresh) {
-            CacheEntry entry = recommendationCache.get(userEmail);
+            CacheEntry entry = recommendationCache.get(cacheKey(userEmail));
             if (entry != null && entry.generationDate.equals(today)) {
                 return entry.recommendations; // On retourne le cache (la liste ne change pas)
             }
@@ -116,9 +117,13 @@ public class RecommendationService {
         }
 
         // 3. On sauvegarde dans le cache avant de retourner
-        recommendationCache.put(userEmail, new CacheEntry(mixedResults, today));
+        recommendationCache.put(cacheKey(userEmail), new CacheEntry(mixedResults, today));
 
         return mixedResults;
+    }
+
+    private String cacheKey(String userEmail) {
+        return userEmail + ':' + i18n.cacheSuffix();
     }
 
     private List<RecommendationItemDTO> fetchMovieRecommendations(int movieId, Set<Integer> existingIds) {
