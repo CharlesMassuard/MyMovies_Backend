@@ -15,6 +15,7 @@ public class TmdbService {
 
     private static final String MOVIE_URL = "/movie/";
     private static final String TV_URL = "/tv/";
+    private static final String PERSON_URL = "/person/";
     private static final String LANGUAGE = "language";
     private static final String LANGUAGE_FR = "fr-FR";
 
@@ -239,5 +240,34 @@ public class TmdbService {
                 .build())
             .retrieve()
             .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
+    public String getPersonDetails(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(PERSON_URL + id)
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
+    public String getPersonCredits(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(PERSON_URL + id + "/combined_credits")
+                .queryParam(LANGUAGE, LANGUAGE_FR)
+                .build())
+            .retrieve()
+            .body(String.class);
+    }
+
+    public String getPersonExternalIds(String id) {
+        return client.get()
+            .uri(uriBuilder -> uriBuilder
+                .path(PERSON_URL + id + "/external_ids")
+                .build())
+            .retrieve()
+            .body(String.class);
     }
 }
