@@ -21,8 +21,12 @@ public class JwtFilter extends OncePerRequestFilter {
     //On force le filtre à ignorer nos routes publiques
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI();
-        return path.startsWith("/api/auth/");
+        String path = request.getServletPath();
+        return path.equals("/api/auth/login")
+                || path.equals("/api/auth/register")
+                || path.equals("/api/auth/refresh")
+                || path.equals("/api/auth/reset-password")
+                || path.equals("/api/auth/forgot-password");
     }
 
     @Override

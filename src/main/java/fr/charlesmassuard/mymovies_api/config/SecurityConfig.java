@@ -41,8 +41,11 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/movies/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/series/**").permitAll() 
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/person/**").permitAll()
-                .requestMatchers("/api/auth/login", "/api/auth/register", 
-                "/api/auth/refresh", "/api/auth/reset-password", "/api/auth/forgot-password").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/register").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/refresh").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/reset-password").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/auth/forgot-password").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
