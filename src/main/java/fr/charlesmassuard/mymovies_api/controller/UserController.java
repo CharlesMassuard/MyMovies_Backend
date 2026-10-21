@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -55,8 +56,9 @@ public class UserController {
             String mail = credentials.get("mail");
             String password = credentials.get("password");
             UserDTO user = userService.authenticateUser(mail, password);
-            String token = jwtUtils.generateToken(mail);
-            String refreshToken = jwtUtils.generateRefreshToken(mail);
+            String normalizedMail = mail == null ? null : mail.trim().toLowerCase();
+            String token = jwtUtils.generateToken(normalizedMail);
+            String refreshToken = jwtUtils.generateRefreshToken(normalizedMail);
             return ResponseEntity.ok(Map.of(
                     STATUS, SUCCESS,
                     MESSAGE, i18n.get("auth.loginSuccess"),
@@ -95,6 +97,11 @@ public class UserController {
                 STATUS, ERROR,
                 MESSAGE, e.getMessage()
             ));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                STATUS, ERROR,
+                MESSAGE, i18n.get("error.pseudoTaken")
+            ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     STATUS, ERROR,
@@ -117,6 +124,11 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                 STATUS, ERROR,
                 MESSAGE, e.getMessage()
+            ));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                STATUS, ERROR,
+                MESSAGE, i18n.get("error.pseudoTaken")
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
