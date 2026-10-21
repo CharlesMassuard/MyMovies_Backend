@@ -13,8 +13,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import fr.charlesmassuard.mymovies_api.repository.UserMovieRepository;
 
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -91,9 +94,9 @@ public class UserService {
         User user = userRepository.findByMail(mail)
                 .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
 
-        // if (userRepository.existsByPseudo(newPseudo)) {
-        //     throw new UserException(i18n.get("error.pseudoTaken"));
-        // }
+        //if(userRepository.existsByPseudo(newPseudo)){
+        //    throw new UserException(i18n.get("error.pseudoTaken"));
+        //}
 
         user.setPseudo(newPseudo);
         userRepository.save(user);
@@ -153,35 +156,36 @@ public class UserService {
         //constructiondelurldynamique
         String resetUrl = frontendUrl + "/reset-password?token=" + token;
 
-        //creationetenvoidesmails
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("charles@charlesmassuard.com");
-        message.setTo(user.getMail());
-        message.setSubject(i18n.get("auth.resetEmailSubject"));
-        
-        //concatenationdespartiesdumail
-        String mailContent = i18n.get("auth.resetEmailBody") + "\n" 
-                        + resetUrl + "\n\n" 
-                        + i18n.get("auth.resetEmailExpiry");
-        
-        message.setText(mailContent);
-        mailSender.send(message);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
+            
+            helper.setFrom("charles@charlesmassuard.com", "MyMovies");
+            helper.setTo(user.getMail());
+            helper.setSubject(i18n.get("auth.resetEmailSubject"));
+            
+            String mailContent = i18n.get("auth.resetEmailBody") + "\n" 
+                            + resetUrl + "\n\n" 
+                            + i18n.get("auth.resetEmailExpiry");
+            
+            helper.setText(mailContent);
+            mailSender.send(message);
+            
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            throw new UserException("Erreur lors de l'envoi de l'email");
+        }
     }
 
-    //nouvelle methode pour valider le token et changer le mdp
     public void resetPassword(String token, String newPassword) throws UserException {
         User user = userRepository.findByResetToken(token)
                 .orElseThrow(() -> new UserException(i18n.get("error.invalidToken")));
 
-        //verification de l'expiration
         if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
             throw new UserException(i18n.get("error.expiredToken"));
         }
 
-        //mise a jour du mot de passe
         user.setPassword(passwordEncoder.encode(newPassword));
         
-        //nettoyage du token
         user.setResetToken(null);
         user.setResetTokenExpiry(null);
         userRepository.save(user);
