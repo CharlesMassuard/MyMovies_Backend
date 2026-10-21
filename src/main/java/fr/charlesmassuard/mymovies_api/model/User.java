@@ -38,4 +38,7 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime lastLoginDate;
 
+    private String resetToken;
+    private LocalDateTime resetTokenExpiry;
+
 }

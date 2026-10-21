@@ -196,4 +196,49 @@ public class UserController {
             ));
         }
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody Map<String, String> request) {
+        try {
+            String mail = request.get("mail");
+            userService.processForgotPassword(mail);
+            return ResponseEntity.ok(Map.of(
+                    STATUS, SUCCESS,
+                    MESSAGE, i18n.get("auth.resetLinkSent")
+            ));
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                STATUS, ERROR,
+                MESSAGE, e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    STATUS, ERROR,
+                    MESSAGE, i18n.get("error.unexpected")
+            ));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(@RequestBody Map<String, String> request) {
+        try {
+            String token = request.get("token");
+            String newPassword = request.get("password");
+            userService.resetPassword(token, newPassword);
+            return ResponseEntity.ok(Map.of(
+                    STATUS, SUCCESS,
+                    MESSAGE, i18n.get("auth.passwordUpdated")
+            ));
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                STATUS, ERROR,
+                MESSAGE, e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    STATUS, ERROR,
+                    MESSAGE, i18n.get("error.unexpected")
+            ));
+        }
+    }
 }

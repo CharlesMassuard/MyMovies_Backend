@@ -13,6 +13,12 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import fr.charlesmassuard.mymovies_api.repository.UserMovieRepository;
 
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+
 @Service
 public class UserService {
 
@@ -22,12 +28,18 @@ public class UserService {
     private final UserMovieRepository userMovieRepository;
     private final I18nService i18n;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, UserMovieRepository userMovieRepository, I18nService i18n) {
+    private final JavaMailSender mailSender;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, UserMovieRepository userMovieRepository, I18nService i18n, JavaMailSender mailSender) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.userMovieRepository = userMovieRepository;
         this.i18n = i18n;
+        this.mailSender = mailSender;
     }
 
     public UserDTO createUser(String pseudo, String mail, String password) throws UserException {
@@ -124,5 +136,54 @@ public class UserService {
         userMovieRepository.deleteAllByUserId(user.getId());
 
         userRepository.delete(user);
+    }
+
+    public void processForgotPassword(String mail) throws UserException {
+        User user = userRepository.findByMail(mail)
+                .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
+
+        //generationdutokenunique
+        String token = UUID.randomUUID().toString();
+        
+        //expirationdans1heure
+        user.setResetToken(token);
+        user.setResetTokenExpiry(LocalDateTime.now().plusHours(1));
+        userRepository.save(user);
+
+        //constructiondelurldynamique
+        String resetUrl = frontendUrl + "/reset-password?token=" + token;
+
+        //creationetenvoidesmails
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("charles@charlesmassuard.com");
+        message.setTo(user.getMail());
+        message.setSubject(i18n.get("auth.resetEmailSubject"));
+        
+        //concatenationdespartiesdumail
+        String mailContent = i18n.get("auth.resetEmailBody") + "\n" 
+                        + resetUrl + "\n\n" 
+                        + i18n.get("auth.resetEmailExpiry");
+        
+        message.setText(mailContent);
+        mailSender.send(message);
+    }
+
+    //nouvelle methode pour valider le token et changer le mdp
+    public void resetPassword(String token, String newPassword) throws UserException {
+        User user = userRepository.findByResetToken(token)
+                .orElseThrow(() -> new UserException(i18n.get("error.invalidToken")));
+
+        //verification de l'expiration
+        if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new UserException(i18n.get("error.expiredToken"));
+        }
+
+        //mise a jour du mot de passe
+        user.setPassword(passwordEncoder.encode(newPassword));
+        
+        //nettoyage du token
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
     }
 }
