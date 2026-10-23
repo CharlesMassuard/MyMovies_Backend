@@ -50,4 +50,7 @@ public class UserMovie {
     @ManyToOne
     @JoinColumn(name = "movie_id", nullable = false)
     private Movie movie;
+
+    @OneToMany(mappedBy = "userMovie", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<MovieWatchHistory> watchHistories;
 }

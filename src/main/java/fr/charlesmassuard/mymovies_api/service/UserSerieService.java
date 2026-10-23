@@ -8,6 +8,7 @@ import fr.charlesmassuard.mymovies_api.exceptions.UserException;
 import fr.charlesmassuard.mymovies_api.model.Serie;
 import fr.charlesmassuard.mymovies_api.model.Status;
 import fr.charlesmassuard.mymovies_api.model.User;
+import fr.charlesmassuard.mymovies_api.model.UserMovie;
 import fr.charlesmassuard.mymovies_api.model.UserSerie;
 import fr.charlesmassuard.mymovies_api.repository.SerieRepository;
 import fr.charlesmassuard.mymovies_api.repository.UserSerieRepository;
@@ -18,6 +19,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+
+import fr.charlesmassuard.mymovies_api.dto.WatchHistoryDTO;
+import fr.charlesmassuard.mymovies_api.model.SerieWatchHistory;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 @Service
 @RequiredArgsConstructor
@@ -214,5 +220,82 @@ public class UserSerieService {
                 .dateViewed(us.getDateViewed())
                 .build();
         }).toList();
+    }
+
+    public List<WatchHistoryDTO> getSerieWatchHistory(String userEmail, int serieId) throws UserException {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
+        
+        UserSerie userSerie = userSerieRepository.findByUserIdAndSerieId(user.getId(), serieId)
+            .orElseThrow(() -> new UserException(i18n.get("error.seriesNotFound")));
+
+        List<WatchHistoryDTO> historyList = new ArrayList<>();
+
+        //On ajoute le visionnage historique principal (celui déjà en base)
+        if (userSerie.getStatus() == Status.WATCHED) {
+            historyList.add(WatchHistoryDTO.builder()
+                .dateViewed(userSerie.getDateViewed())
+                .rating(userSerie.getRating())
+                .comment(userSerie.getCommentaire())
+                .isMain(true)
+                .build());
+        }
+
+        //On ajoute les visionnages successifs
+        if (userSerie.getWatchHistories() != null) {
+            for (SerieWatchHistory history : userSerie.getWatchHistories()) {
+                historyList.add(WatchHistoryDTO.builder()
+                    .id(history.getId())
+                    .dateViewed(history.getDateViewed())
+                    .rating(history.getRating())
+                    .comment(history.getCommentaire())
+                    .isMain(false)
+                    .build());
+            }
+        }
+
+        //Tri par date décroissante (du plus récent au plus ancien)
+        historyList.sort(Comparator.comparing(WatchHistoryDTO::getDateViewed, Comparator.nullsLast(Comparator.reverseOrder())));
+        
+        return historyList;
+    }
+
+    public void addSerieRewatch(String userEmail, int serieId, String dateViewedStr, int rating, String comment) throws UserException {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
+        
+        UserSerie userSerie = userSerieRepository.findByUserIdAndSerieId(user.getId(), serieId)
+            .orElseThrow(() -> new UserException(i18n.get("error.seriesNotFound")));
+
+        LocalDateTime viewDate = (dateViewedStr != null && !dateViewedStr.isEmpty()) 
+            ? LocalDate.parse(dateViewedStr).atTime(12, 0) 
+            : LocalDateTime.now();
+
+        SerieWatchHistory newHistory = SerieWatchHistory.builder()
+            .dateViewed(viewDate)
+            .rating(rating)
+            .commentaire(comment)
+            .userSerie(userSerie)
+            .build();
+
+        if (userSerie.getWatchHistories() == null) {
+            userSerie.setWatchHistories(new ArrayList<>());
+        }
+        userSerie.getWatchHistories().add(newHistory);
+        
+        userSerieRepository.save(userSerie);
+    }
+
+    public void deleteSerieRewatch(String userEmail, int serieId, int historyId) throws UserException {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
+        
+        UserSerie userSerie = userSerieRepository.findByUserIdAndSerieId(user.getId(), serieId)
+            .orElseThrow(() -> new UserException(i18n.get("error.seriesNotFound")));
+
+        if (userSerie.getWatchHistories() != null) {
+            userSerie.getWatchHistories().removeIf(h -> h.getId() == historyId);
+            userSerieRepository.save(userSerie);
+        }
     }
 }

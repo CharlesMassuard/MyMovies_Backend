@@ -50,4 +50,7 @@ public class UserSerie {
     @ManyToOne
     @JoinColumn(name = "serie_id", nullable = false)
     private Serie serie;
+
+    @OneToMany(mappedBy = "userSerie", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<SerieWatchHistory> watchHistories;
 }

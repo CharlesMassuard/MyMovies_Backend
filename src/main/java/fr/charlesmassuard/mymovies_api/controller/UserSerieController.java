@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import java.security.Principal;
 import java.util.List;
 
+import fr.charlesmassuard.mymovies_api.dto.WatchHistoryDTO;
+
 @RestController
 @RequestMapping("/api/user/series")
 @RequiredArgsConstructor
@@ -90,5 +92,35 @@ public class UserSerieController {
         String userEmail = principal.getName();
         userSerieService.deleteUserSerieStatus(userEmail, serieId);
         return ResponseEntity.ok(i18n.get("watchlist.seriesRemoved"));
+    }
+
+    public record RewatchRequest(String dateViewed, int rating, String comment) {}
+
+    @GetMapping("/history/{serieId}")
+    public ResponseEntity<List<WatchHistoryDTO>> getSerieWatchHistory(@PathVariable int serieId, Principal principal) throws UserException {
+        String userEmail = principal.getName();
+        return ResponseEntity.ok(userSerieService.getSerieWatchHistory(userEmail, serieId));
+    }
+
+    @PostMapping("/rewatch/{serieId}")
+    public ResponseEntity<String> addSerieRewatch(
+        @PathVariable int serieId, 
+        @RequestBody RewatchRequest request, 
+        Principal principal
+    ) throws UserException {
+        String userEmail = principal.getName();
+        userSerieService.addSerieRewatch(userEmail, serieId, request.dateViewed(), request.rating(), request.comment());
+        return ResponseEntity.ok("Nouveau visionnage ajouté"); //Ou i18n.get("watchlist.seriesRewatchAdded") si tu l'ajoutes dans tes fichiers de langue
+    }
+
+    @DeleteMapping("/rewatch/{serieId}/{historyId}")
+    public ResponseEntity<String> deleteSerieRewatch(
+        @PathVariable int serieId,
+        @PathVariable int historyId,
+        Principal principal
+    ) throws UserException {
+        String userEmail = principal.getName();
+        userSerieService.deleteSerieRewatch(userEmail, serieId, historyId);
+        return ResponseEntity.ok("Visionnage supprimé");
     }
 }
