@@ -3,6 +3,7 @@ package fr.charlesmassuard.mymovies_api.controller;
 import fr.charlesmassuard.mymovies_api.service.UserMovieService;
 import fr.charlesmassuard.mymovies_api.service.I18nService;
 import fr.charlesmassuard.mymovies_api.dto.UserMovieResponseDTO;
+import fr.charlesmassuard.mymovies_api.dto.WatchHistoryDTO;
 import fr.charlesmassuard.mymovies_api.exceptions.UserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -90,5 +91,24 @@ public class UserMovieController {
         String userEmail = principal.getName();
         userMovieService.deleteUserMovieStatus(userEmail, movieId);
         return ResponseEntity.ok(i18n.get("watchlist.movieRemoved"));
+    }
+
+    public record RewatchRequest(String dateViewed, int rating, String comment) {}
+
+    @GetMapping("/history/{movieId}")
+    public ResponseEntity<List<WatchHistoryDTO>> getMovieWatchHistory(@PathVariable int movieId, Principal principal) throws UserException {
+        String userEmail = principal.getName();
+        return ResponseEntity.ok(userMovieService.getMovieWatchHistory(userEmail, movieId));
+    }
+
+    @PostMapping("/rewatch/{movieId}")
+    public ResponseEntity<String> addMovieRewatch(
+        @PathVariable int movieId, 
+        @RequestBody RewatchRequest request, 
+        Principal principal
+    ) throws UserException {
+        String userEmail = principal.getName();
+        userMovieService.addMovieRewatch(userEmail, movieId, request.dateViewed(), request.rating(), request.comment());
+        return ResponseEntity.ok("Nouveau visionnage ajouté");
     }
 }

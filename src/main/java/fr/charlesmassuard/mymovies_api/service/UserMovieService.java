@@ -13,6 +13,10 @@ import fr.charlesmassuard.mymovies_api.repository.MovieRepository;
 import fr.charlesmassuard.mymovies_api.repository.UserMovieRepository;
 import fr.charlesmassuard.mymovies_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import fr.charlesmassuard.mymovies_api.dto.WatchHistoryDTO;
+import fr.charlesmassuard.mymovies_api.model.MovieWatchHistory;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -206,5 +210,69 @@ public class UserMovieService {
                 .dateViewed(um.getDateViewed())
                 .build();
         }).toList();
+    }
+
+    //Nouvelles méthodes dans UserMovieService
+    public List<WatchHistoryDTO> getMovieWatchHistory(String userEmail, int movieId) throws UserException {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
+        
+        UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
+            .orElseThrow(() -> new UserException(i18n.get("error.movieNotFound")));
+
+        List<WatchHistoryDTO> historyList = new ArrayList<>();
+
+        //On ajoute le visionnage historique principal (celui déjà en base)
+        if (userMovie.getStatus() == Status.WATCHED) {
+            historyList.add(WatchHistoryDTO.builder()
+                .dateViewed(userMovie.getDateViewed())
+                .rating(userMovie.getRating())
+                .comment(userMovie.getCommentaire())
+                .isMain(true)
+                .build());
+        }
+
+        //On ajoute les visionnages successifs
+        if (userMovie.getWatchHistories() != null) {
+            for (MovieWatchHistory history : userMovie.getWatchHistories()) {
+                historyList.add(WatchHistoryDTO.builder()
+                    .dateViewed(history.getDateViewed())
+                    .rating(history.getRating())
+                    .comment(history.getCommentaire())
+                    .isMain(false)
+                    .build());
+            }
+        }
+
+        //Tri par date décroissante (du plus récent au plus ancien)
+        historyList.sort(Comparator.comparing(WatchHistoryDTO::getDateViewed, Comparator.nullsLast(Comparator.reverseOrder())));
+        
+        return historyList;
+    }
+
+    public void addMovieRewatch(String userEmail, int movieId, String dateViewedStr, int rating, String comment) throws UserException {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
+        
+        UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
+            .orElseThrow(() -> new UserException(i18n.get("error.movieNotFound")));
+
+        LocalDateTime viewDate = (dateViewedStr != null && !dateViewedStr.isEmpty()) 
+            ? LocalDate.parse(dateViewedStr).atTime(12, 0) 
+            : LocalDateTime.now();
+
+        MovieWatchHistory newHistory = MovieWatchHistory.builder()
+            .dateViewed(viewDate)
+            .rating(rating)
+            .commentaire(comment)
+            .userMovie(userMovie)
+            .build();
+
+        if (userMovie.getWatchHistories() == null) {
+            userMovie.setWatchHistories(new ArrayList<>());
+        }
+        userMovie.getWatchHistories().add(newHistory);
+        
+        userMovieRepository.save(userMovie);
     }
 }
