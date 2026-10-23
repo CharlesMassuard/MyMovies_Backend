@@ -111,4 +111,15 @@ public class UserMovieController {
         userMovieService.addMovieRewatch(userEmail, movieId, request.dateViewed(), request.rating(), request.comment());
         return ResponseEntity.ok("Nouveau visionnage ajouté");
     }
+
+    @DeleteMapping("/rewatch/{movieId}/{historyId}")
+    public ResponseEntity<String> deleteMovieRewatch(
+        @PathVariable int movieId,
+        @PathVariable int historyId,
+        Principal principal
+    ) throws UserException {
+        String userEmail = principal.getName();
+        userMovieService.deleteMovieRewatch(userEmail, movieId, historyId);
+        return ResponseEntity.ok("Visionnage supprimé");
+    }
 }

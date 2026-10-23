@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 @Builder
 public class WatchHistoryDTO {
+    private Integer id;
     private LocalDateTime dateViewed;
     private int rating;
     private String comment;

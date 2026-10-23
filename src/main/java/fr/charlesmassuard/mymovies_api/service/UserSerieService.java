@@ -8,6 +8,7 @@ import fr.charlesmassuard.mymovies_api.exceptions.UserException;
 import fr.charlesmassuard.mymovies_api.model.Serie;
 import fr.charlesmassuard.mymovies_api.model.Status;
 import fr.charlesmassuard.mymovies_api.model.User;
+import fr.charlesmassuard.mymovies_api.model.UserMovie;
 import fr.charlesmassuard.mymovies_api.model.UserSerie;
 import fr.charlesmassuard.mymovies_api.repository.SerieRepository;
 import fr.charlesmassuard.mymovies_api.repository.UserSerieRepository;
@@ -244,6 +245,7 @@ public class UserSerieService {
         if (userSerie.getWatchHistories() != null) {
             for (SerieWatchHistory history : userSerie.getWatchHistories()) {
                 historyList.add(WatchHistoryDTO.builder()
+                    .id(history.getId())
                     .dateViewed(history.getDateViewed())
                     .rating(history.getRating())
                     .comment(history.getCommentaire())
@@ -282,5 +284,18 @@ public class UserSerieService {
         userSerie.getWatchHistories().add(newHistory);
         
         userSerieRepository.save(userSerie);
+    }
+
+    public void deleteSerieRewatch(String userEmail, int serieId, int historyId) throws UserException {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
+        
+        UserSerie userSerie = userSerieRepository.findByUserIdAndSerieId(user.getId(), serieId)
+            .orElseThrow(() -> new UserException(i18n.get("error.seriesNotFound")));
+
+        if (userSerie.getWatchHistories() != null) {
+            userSerie.getWatchHistories().removeIf(h -> h.getId() == historyId);
+            userSerieRepository.save(userSerie);
+        }
     }
 }

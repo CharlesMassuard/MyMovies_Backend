@@ -236,6 +236,7 @@ public class UserMovieService {
         if (userMovie.getWatchHistories() != null) {
             for (MovieWatchHistory history : userMovie.getWatchHistories()) {
                 historyList.add(WatchHistoryDTO.builder()
+                    .id(history.getId())
                     .dateViewed(history.getDateViewed())
                     .rating(history.getRating())
                     .comment(history.getCommentaire())
@@ -274,5 +275,18 @@ public class UserMovieService {
         userMovie.getWatchHistories().add(newHistory);
         
         userMovieRepository.save(userMovie);
+    }
+
+    public void deleteMovieRewatch(String userEmail, int movieId, int historyId) throws UserException {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
+        
+        UserMovie userMovie = userMovieRepository.findByUserIdAndMovieId(user.getId(), movieId)
+            .orElseThrow(() -> new UserException(i18n.get("error.movieNotFound")));
+
+        if (userMovie.getWatchHistories() != null) {
+            userMovie.getWatchHistories().removeIf(h -> h.getId() == historyId);
+            userMovieRepository.save(userMovie);
+        }
     }
 }

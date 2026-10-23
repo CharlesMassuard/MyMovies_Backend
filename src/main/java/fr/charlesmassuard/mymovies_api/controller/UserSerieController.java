@@ -112,4 +112,15 @@ public class UserSerieController {
         userSerieService.addSerieRewatch(userEmail, serieId, request.dateViewed(), request.rating(), request.comment());
         return ResponseEntity.ok("Nouveau visionnage ajouté"); //Ou i18n.get("watchlist.seriesRewatchAdded") si tu l'ajoutes dans tes fichiers de langue
     }
+
+    @DeleteMapping("/rewatch/{serieId}/{historyId}")
+    public ResponseEntity<String> deleteSerieRewatch(
+        @PathVariable int serieId,
+        @PathVariable int historyId,
+        Principal principal
+    ) throws UserException {
+        String userEmail = principal.getName();
+        userSerieService.deleteSerieRewatch(userEmail, serieId, historyId);
+        return ResponseEntity.ok("Visionnage supprimé");
+    }
 }
