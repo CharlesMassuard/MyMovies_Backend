@@ -298,4 +298,62 @@ public class UserSerieService {
             userSerieRepository.save(userSerie);
         }
     }
+
+    public List<Map<String, Object>> getSeriesWithNewEpisodes(String userEmail) throws UserException {
+        User user = userRepository.findByMail(userEmail)
+            .orElseThrow(() -> new UserException(i18n.get("error.userNotFound")));
+
+        List<UserSerie> watchedSeries = userSerieRepository.findAllByUserId(user.getId()).stream()
+            .filter(us -> us.getStatus() == Status.WATCHED && us.getDateViewed() != null && us.getDateViewed().getYear() > 1970)
+            .toList();
+
+        List<Map<String, Object>> updates = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        for (UserSerie us : watchedSeries) {
+            try {
+                Map<String, Object> details = tmdbService.getSerieDetailsMap(us.getSerie().getId());
+                if (details == null) continue;
+                Object lastEpObj = details.get("last_episode_to_air");
+                if (!(lastEpObj instanceof Map<?, ?> lastEp)) continue;
+                Object airDateObj = lastEp.get("air_date");
+                if (!(airDateObj instanceof String airDateStr) || airDateStr.isBlank()) continue;
+
+                LocalDate airDate = LocalDate.parse(airDateStr);
+                LocalDate viewedDate = us.getDateViewed().toLocalDate();
+
+                if (airDate.isAfter(viewedDate) && !airDate.isAfter(today)) {
+                    int seasonNum = lastEp.get("season_number") instanceof Number n ? n.intValue() : 0;
+                    int epNum = lastEp.get("episode_number") instanceof Number n ? n.intValue() : 0;
+                    String code = String.format("S%02dE%02d", seasonNum, epNum);
+
+                    boolean isNewSeason = false;
+                    if (details.get("seasons") instanceof List<?> seasons) {
+                        for (Object sObj : seasons) {
+                            if (sObj instanceof Map<?, ?> sMap) {
+                                int sNum = sMap.get("season_number") instanceof Number n ? n.intValue() : -1;
+                                if (sNum == seasonNum && sMap.get("air_date") instanceof String sAir && !sAir.isBlank()) {
+                                    LocalDate seasonAirDate = LocalDate.parse(sAir);
+                                    if (seasonAirDate.isAfter(viewedDate)) {
+                                        isNewSeason = true;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    updates.add(Map.of(
+                        "serieId", us.getSerie().getId(),
+                        "latestEpisodeCode", code,
+                        "latestAirDate", airDateStr,
+                        "isNewSeason", isNewSeason
+                    ));
+                }
+            } catch (Exception ignored) {
+                // Skip if TMDB lookup fails
+            }
+        }
+        return updates;
+    }
 }

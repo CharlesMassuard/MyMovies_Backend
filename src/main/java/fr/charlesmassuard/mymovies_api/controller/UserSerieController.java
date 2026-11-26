@@ -123,4 +123,10 @@ public class UserSerieController {
         userSerieService.deleteSerieRewatch(userEmail, serieId, historyId);
         return ResponseEntity.ok("Visionnage supprimé");
     }
+
+    @GetMapping("/new-episodes")
+    public ResponseEntity<List<java.util.Map<String, Object>>> getSeriesWithNewEpisodes(Principal principal) throws UserException {
+        String userEmail = principal.getName();
+        return ResponseEntity.ok(userSerieService.getSeriesWithNewEpisodes(userEmail));
+    }
 }

@@ -21,6 +21,28 @@ public class SerieController {
         return tmdb.getTrendingSeriesDay();
     }
 
+    @GetMapping("/upcoming")
+    public String upcomingSeries() {
+        return tmdb.getUpcomingSeries();
+    }
+
+    @GetMapping("/genres")
+    public String serieGenres() {
+        return tmdb.getSerieGenres();
+    }
+
+    @GetMapping("/discover")
+    public String discoverSeries(
+        @RequestParam(required = false) String genre,
+        @RequestParam(required = false) Integer year,
+        @RequestParam(required = false) Double minRating,
+        @RequestParam(required = false) String sortBy,
+        @RequestParam(required = false) String provider,
+        @RequestParam(defaultValue = "1") int page
+    ) {
+        return tmdb.discoverSeries(genre, year, minRating, sortBy, provider, page);
+    }
+
     @GetMapping("/search")
     public String searchSeries(@RequestParam String query) {
         return tmdb.searchSeries(query);
